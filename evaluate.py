@@ -1,16 +1,12 @@
-"""Evaluation utilities for TIDE Neural ODE.
+"""Evaluation helpers for TIDE Neural ODE used in downstream analysis.
 
-This module extracts frozen latent representations from a trained
-TIDENeuralODE and runs downstream clinical utility (mortality
-prediction) and a simple fairness check (Pearson correlation
-with observation density).
+These utilities extract frozen latent representations from a trained
+TIDENeuralODE and evaluate clinical utility (mortality prediction)
+and a compact fairness check (correlation with observation density).
 
-Notes
------
-- The dataloader is expected to yield tuples: (x, t, c, y, mask)
-    where `x` is the [batch, seq, vitals] tensor, `t` is times,
-    `c` are confounders aligned to timesteps, `y` is label, and
-    `mask` is a boolean mask indicating valid (unpadded) steps.
+Expected dataloader output: `(x, t, c, y, mask)` where `x` is
+`[batch, seq, vitals]`, `c` contains per-timestep confounder features,
+`y` is the supervision label, and `mask` flags valid timesteps.
 """
 
 import torch
@@ -24,27 +20,12 @@ from data.clinical_mimic import get_mimic_dataloader
 from models.tide_ode import TIDENeuralODE
 
 def extract_features_and_labels(loader, model, device):
-    """Pass data through a frozen ODE to extract final latent states.
+    """Run a trained ODE on the dataset and collect per-patient features.
 
-    Parameters
-    ----------
-    loader : Iterable
-        Yields batches in the format (x, t, c, y, mask) as described
-        in the module docstring.
-    model : torch.nn.Module
-        A trained `TIDENeuralODE` instance. The function pads input
-        features to `model.dynamics.net[0].in_features` if needed.
-    device : torch.device
-        Torch device to run inference on.
-
-    Returns
-    -------
-    Z : ndarray, shape (N, latent_dim)
-        Last valid hidden state for each patient.
-    Y : ndarray, shape (N,)
-        Binary mortality labels.
-    C : ndarray, shape (N, num_confounders)
-        Confounder values aligned to the final timestep.
+    The function handles padding and returns the final valid hidden
+    state for each patient along with labels and per-patient confounders
+    aligned to the final observed timestep. This representation is used
+    for downstream logistic regression evaluations reported in the paper.
     """
     model.eval()
     all_z = []

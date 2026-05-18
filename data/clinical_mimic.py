@@ -1,12 +1,13 @@
-"""Data utilities for loading and preparing MIMIC-style continuous cohorts.
+"""Data loading and preprocessing utilities for MIMIC-style cohorts.
 
-This module pulls a pre-prepared long-format table from BigQuery,
-pivots vital sign measurements into parallel columns and constructs
-a PyTorch `DataLoader` that yields batched, padded sequences along
-with a boolean mask used to ignore padding during training.
+This module provides a reproducible path from a long-format clinical
+table to batched PyTorch sequences with padding and masks. For the
+ICDM submission we ship a pre-saved CSV artifact and a deterministic
+collate function so reviewers can reproduce the exact training
+behaviour without external database access.
 
-Important: the BigQuery table schema the code expects is referenced
-in `get_mimic_dataloader` by the `id_mapping` and `index_cols`.
+The pivoting logic and expected column layout are documented near the
+`get_mimic_dataloader` implementation.
 """
 
 import pandas as pd
@@ -17,14 +18,12 @@ from torch.nn.utils.rnn import pad_sequence
 from google.cloud import bigquery
 
 class MIMICContinuousDataset(Dataset):
-    """PyTorch Dataset that returns per-stay time series and static vars.
+    """Dataset returning per-stay time series and static demographic vars.
 
-    Each `__getitem__` returns a tuple `(x, t, c, y, d)` where:
-    - `x` is a float tensor [seq_len, num_vitals]
-    - `t` is a float tensor of timestamps (hours since admission)
-    - `c` is a tensor of per-timestep confounder features
-    - `y` is a scalar label (e.g., hospital mortality)
-    - `d` is a vector of static demographics (age, gender_encoded)
+    Each item is `(x, t, c, y, d)` where `x` is the sequence of vitals
+    (time-major), `t` are hours-since-admission timestamps, `c` are
+    per-timestep confounders, `y` is the episode label, and `d` is the
+    static demographic vector used in fairness analyses.
     """
     def __init__(self, dataframe):
         self.df = dataframe
@@ -56,7 +55,7 @@ class MIMICContinuousDataset(Dataset):
         return x, t, c, y, d
 
 def tide_collate_fn(batch):
-    # Unpack the new 'd' (demographics)
+    # Unpack the demographic vector `d` and include it in the batch
     xs, ts, cs, ys, ds = zip(*batch)
     
     # Pad variable length sequences with 0.0
@@ -84,9 +83,11 @@ import os
 
 # using saved csv for reproducibility
 def get_mimic_dataloader(csv_path='data/mimic_cemr_cohort.csv', batch_size=32):
-    """
-    Loads the static, anonymized clinical cohort from a local CSV artifact 
-    to guarantee strict reproducibility for peer review.
+    """Load the pre-saved cohort CSV and return a batched DataLoader.
+
+    To ensure reproducibility for reviewers, this function defaults to
+    reading a local CSV artifact. The processing steps (pivot, fill,
+    normalization) mirror the data extraction used for our experiments.
     """
     print(f"Loading static clinical cohort from {csv_path}...")
     

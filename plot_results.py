@@ -1,8 +1,10 @@
-"""Helper script to generate high-resolution synthetic figures for the paper.
+"""High-resolution illustrative figures used for manuscript layout.
 
-The figures here are illustrative (synthetic data) and intended for
-manuscript layout. They should not be used as evaluation code. For
-reproducible figures use a fixed random seed when desired.
+These plotting helpers produce publication-ready PDF figures that are
+intended for the paper's layout and visual checks. The data are
+synthetic toy traces to demonstrate the visual style; for reproducible
+results set a fixed random seed or pass real model outputs into the
+plotting routines.
 """
 
 import numpy as np
@@ -32,10 +34,11 @@ plt.rcParams.update({
 })
 
 def plot_evidential_trajectory():
-    """Continuous trajectory demo with epistemic uncertainty shading.
+    """Simulated continuous trajectory with shaded epistemic uncertainty.
 
-    Note: this function simulates data for figure layout. For deterministic
-    outputs set `np.random.seed(...)` before calling.
+    This demo creates a smooth ODE-like mean curve with a shaded
+    uncertainty band and irregular observations overlaid. It is meant
+    for visual presentation rather than quantitative evaluation.
     """
     fig, ax = plt.subplots(figsize=(8, 4))
     
@@ -69,9 +72,11 @@ def plot_evidential_trajectory():
     print("Saved trajectory_plot.pdf")
 
 def plot_fairness_density():
-    """Epistemic parity KDE plot (synthetic demonstration).
+    """KDE visualization of epistemic uncertainty across demographics.
 
-    The distributions are sampled to mimic reported trust-gap statistics.
+    The distributions are synthetically sampled to resemble the trust
+    gap statistics discussed in the manuscript. Replace with real
+    uncertainty scores for empirical figures.
     """
     fig, ax = plt.subplots(figsize=(6, 4))
     
@@ -92,8 +97,10 @@ def plot_fairness_density():
     print("Saved fairness_density.pdf")
 
 def plot_auroc():
-    """ROC curve example (synthetic). Replace with model outputs for
-    publication-quality figures.
+    """Illustrative ROC curve. Substitute with real predictions for paper figures.
+
+    This routine draws a stylized ROC curve to demonstrate plotting
+    conventions and line weights used in the submission figures.
     """
     fig, ax = plt.subplots(figsize=(5, 5))
     

@@ -1,11 +1,11 @@
-"""Evaluation utilities for the CEMR-Evidential ODE.
+"""Evaluation helpers for the CEMR evidential ODE (ICDM 2026-ready).
 
-This module runs a frozen CEMR model to extract final latent states
-and a per-patient epistemic uncertainty score. It also performs
-downstream mortality prediction and a demographic parity audit.
-
-The dataloader is expected to yield (x, t, c, y, d, mask) where `d`
-contains static demographic attributes (e.g., age, gender).
+These utilities run a frozen CEMR model to extract final latent
+representations and a per-patient epistemic uncertainty score. They
+also perform downstream mortality prediction and a compact gender
+parity audit used in our experimental section. The dataloader is
+expected to yield `(x, t, c, y, d, mask)` where `d` contains static
+demographic attributes (e.g., age, gender).
 """
 
 import torch
@@ -25,7 +25,12 @@ import numpy as np
 import torch
 
 def seed_everything(seed=42):
-    """Forces strict determinism for perfect reproducibility."""
+    """Pin RNGs and PyTorch flags to improve run-to-run reproducibility.
+
+    Reproducible experimental artifacts are essential for peer review;
+    this helper pins Python/NumPy/PyTorch seeds and sets deterministic
+    cuDNN behaviour where available.
+    """
     print(f"Locking random seeds to {seed} for reproducibility...")
     os.environ['PYTHONHASHSEED'] = str(seed)
     random.seed(seed)
@@ -40,19 +45,11 @@ def seed_everything(seed=42):
 
 
 def extract_cemr_features(loader, model, device):
-    """Run model inference and return final state, labels, demographics, and uncertainty.
+    """Run the model in evaluation mode and collect per-patient features.
 
-    Returns
-    -------
-    Z : ndarray, shape (N, latent_dim)
-        Final latent representation per patient.
-    Y : ndarray, shape (N,)
-        Binary labels.
-    D : ndarray, shape (N, num_demographics)
-        Demographic attributes (e.g., age, gender).
-    Unc : ndarray, shape (N,)
-        Patient-level epistemic uncertainty computed as
-        mean(beta / (alpha - 1)) across vitals with a small epsilon.
+    Returns the last valid latent state for each patient, the binary
+    labels, static demographics, and a scalar epistemic uncertainty
+    score computed per patient by averaging per-vital epistemic terms.
     """
     model.eval()
     all_z, all_y, all_d, all_uncertainty = [], [], [], []
@@ -104,7 +101,11 @@ def extract_cemr_features(loader, model, device):
     return np.vstack(all_z), np.concatenate(all_y), np.vstack(all_d), np.concatenate(all_uncertainty)
 
 def plot_latent_tsne(Z, D):
-    """Generates an A* quality t-SNE scatter plot of the latent space."""
+    """Create a polished t-SNE scatter plot of the final latent states.
+
+    The visual styling is tuned for the manuscript: serif fonts, high
+    DPI and tight bounding boxes for direct inclusion in LaTeX figures.
+    """
     print("Generating latent space t-SNE plot...")
     
     # Palette (Navy, Gold, Light Gray)
@@ -127,7 +128,8 @@ def plot_latent_tsne(Z, D):
     tsne = TSNE(n_components=2, perplexity=30, random_state=42, n_iter=1000)
     z_2d = tsne.fit_transform(Z)
     
-    # Split by gender threshold
+    # Split the test set by the protected gender attribute using the
+    # normalization convention used in preprocessing (values >= 0 vs < 0)
     gender_0_mask = D[:, 1] < 0
     gender_1_mask = D[:, 1] >= 0
     

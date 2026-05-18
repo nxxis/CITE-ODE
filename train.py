@@ -1,14 +1,13 @@
-"""Training script for Phase 1: TIDE Neural ODE.
+"""Phase 1 training: TIDE Neural ODE (minimax adversarial training).
 
-This script trains the TIDE Neural ODE using a minimax procedure:
-first update the discriminator to predict confounders from latent
-trajectories, then update the ODE dynamics to (i) minimize task
-reconstruction error, (ii) stabilize continuous drift, and (iii)
-minimize adversarial confounder leakage.
+This module implements the Phase 1 training used in our experiments.
+We alternate discriminator updates (to predict confounders from latent
+states) with generator updates that minimize reconstruction error,
+stabilize continuous drift, and reduce adversarial leakage. The
+implementation relies on mask-based indexing so losses are computed
+only on valid (unpadded) timesteps.
 
-The training loop uses a mask-based indexing approach where
-`mask` flattens the [batch, seq] timesteps to only the valid timesteps
-before computing per-timestep losses.
+The code is written to be clear and reproducible for reviewers.
 """
 
 import torch

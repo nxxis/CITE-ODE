@@ -1,15 +1,21 @@
-"""Model definitions for the continuous-time TIDE / CEMR ODEs.
+"""Model components for the continuous-time CEMR/TIDE neural ODE.
 
-This module provides a small ODE function and a CEMR evidential
-wrapper that maps continuous latent trajectories to evidential
-distribution parameters per vital sign.
+This file contains the compact ODE vector field and the CEMR-style
+evidential wrapper used in our submission. The wrapper evaluates a
+continuous latent trajectory and produces per-vital evidential
+distribution parameters (gamma, v, alpha, beta) at each timestep.
 
-Shapes and conventions
-----------------------
-- Inputs to `forward` are `x_seq` with shape [Seq, Batch, feat]
-    and `t_eval` a 1D tensor of times to evaluate the ODE on.
-- Outputs: `full_trajectory` is [Seq, Batch, feat]; `z_actual` and
-    `z_pred` are sequence-aligned tensors used for drift regularization.
+Notes on shapes and conventions
+------------------------------
+- `x_seq` is expected as [Seq, Batch, feat] and `t_eval` is a 1D
+    tensor of times the ODE should be evaluated on.
+- The main output `full_trajectory` follows [Seq, Batch, feat]. The
+    pair `z_actual` and `z_pred` are sequence-aligned tensors used by
+    the drift regularizer in training.
+
+All edits in this module are purely documentation-oriented; the
+implementation is intentionally small and readable to aid reproducibility
+for peer review.
 """
 
 import torch
@@ -17,12 +23,11 @@ import torch.nn as nn
 from torchdiffeq import odeint
 
 class ODEFunc(nn.Module):
-    """Simple MLP used as the vector field f(y) for the ODE solver.
+    """Lightweight MLP vector field used by the ODE integrator.
 
-    Args
-    ----
-    latent_dim: int
-        Dimensionality of the latent state y.
+    This MLP defines the vector field f(y) used by the solver. We
+    keep it deliberately small to prioritize interpretability and
+    stable numerical behaviour in experiments.
     """
     def __init__(self, latent_dim):
         super(ODEFunc, self).__init__()
@@ -36,16 +41,13 @@ class ODEFunc(nn.Module):
         return self.net(y)
 
 class CEMREvidentialODE(nn.Module):
-    """Evidential Neural ODE that produces trajectories + evidential params.
+    """Evidential Neural ODE returning continuous trajectories and EDL params.
 
-    Parameters
-    ----------
-    latent_dim : int
-        Dimension of the latent state used internally by the ODE.
-    num_vitals : int
-        Number of parallel vital sign outputs (each has 4 evidential params).
-    num_confounders : int
-        Output dimension of the confounder discriminator.
+    The model evaluates a continuous latent trajectory via an ODE
+    integrator and maps the resulting states to evidential parameters
+    (gamma, v, alpha, beta) per vital sign. A lightweight discriminator
+    is also included for adversarial confounder mitigation during
+    training (used in our fairness experiments).
     """
     def __init__(self, latent_dim=16, num_vitals=4, num_confounders=2):
         super(CEMREvidentialODE, self).__init__()
@@ -99,9 +101,11 @@ class CEMREvidentialODE(nn.Module):
         # Reshape to [Seq, Batch, Num_Vitals, 4_Parameters]
         raw_params = raw_params.view(seq_len, batch_size, self.num_vitals, 4)
         
-        # Apply structural activation constraints to guarantee valid statistical bounds
-        # `gamma` can be any real value (mean proxy). The other params are
-        # constrained via exponentials and offsets to ensure positivity / alpha>1.
+        # Apply structural activation constraints so the outputs respect
+        # the statistical assumptions of a Normal-Inverse-Gamma family.
+        # `gamma` is an unconstrained mean proxy; the remaining params
+        # are exponentiated and offset as needed to guarantee numerical
+        # stability (e.g., alpha > 1 and positive scales).
         gamma = raw_params[..., 0]                    # Real-valued mean proxy
         v = torch.exp(raw_params[..., 1]) + 1e-6       # Degrees of freedom (Positive)
         alpha = torch.exp(raw_params[..., 2]) + 1.0    # Shape parameter (Alpha > 1)

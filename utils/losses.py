@@ -2,33 +2,28 @@ import torch
 import torch.nn as nn
 
 def tide_drift_loss(actual, predicted):
-    """Mean-squared drift loss used to stabilize continuous predictions.
+  """Mean-squared drift loss that stabilizes the learned ODE dynamics.
 
-    Parameters
-    ----------
-    actual, predicted : Tensor
-        Tensors of matching shape containing true and predicted latent
-        subsequences used for drift regularization.
-    """
+  A simple MSE between actual and predicted subsequences encourages
+  the continuous ODE solution to follow the discrete observed
+  subsequences, improving numerical stability and representation
+  fidelity.
+  """
     return nn.MSELoss()(actual, predicted)
 
 
 def evidential_regression_loss(gamma, v, alpha, beta, targets, mask, lambda_reg=0.01):
-    """Evidential NLL + regularizer for Normal-Inverse-Gamma outputs.
+    """Negative log-likelihood for Normal-Inverse-Gamma + epistemic regularizer.
 
-    This function first masks out padded timesteps (using `mask`), then
-    computes the negative log-likelihood of a Normal-Inverse-Gamma
-    predictive distribution and an epistemic regularizer that penalizes
-    under-confident predictions for large errors.
+    The loss combines a probabilistically-principled NLL under a
+    Normal-Inverse-Gamma predictive family with a lightweight
+    regularizer that penalizes large errors occurring with low
+    epistemic evidence. The `mask` argument removes padded timesteps
+    from the computation so training is stable on variable-length
+    sequences.
 
-    Notes
-    -----
-    - gamma, v, alpha, beta are expected to be tensors shaped
-      [Batch*ValidSteps, num_vitals] after masking (the function
-      itself performs masking), and `targets` should be aligned.
-    - The implementation clamps parameters to maintain numerical
-      stability and the statistical constraints (e.g., alpha > 1).
-    - `lambda_reg` weights the epistemic regularizer term.
+    Arguments are expected to be aligned such that masking produces
+    flattened [TotalValidSteps, num_vitals] tensors for all terms.
     """
     # Filter down to unpadded timesteps
     gamma = gamma[mask]

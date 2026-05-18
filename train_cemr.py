@@ -1,10 +1,14 @@
-"""Training script for CEMR-Fair: evidential continuous-time model.
+"""Train the CEMR-Fair evidential continuous-time model.
 
-This script trains the CEMR evidential ODE which outputs both
-continuous latent trajectories and evidential distribution
-parameters (gamma, v, alpha, beta) per vital sign. It follows a
-similar minimax procedure as the base TIDE training but adds an
-evidential NLL objective.
+This training harness implements the recipe used for our ICDM 2026
+submission: a continuous-time latent ODE that outputs both trajectories
+and per-vital evidential parameters. The loop follows a minimax-style
+procedure where a discriminator attempts to predict demographics from
+latent states and the generator minimizes task loss plus a drift
+regularizer while adversarially reducing confounder leakage.
+
+The code is intentionally explicit and readable to ease reproducibility
+during peer review.
 """
 
 import torch
@@ -22,7 +26,11 @@ import numpy as np
 import torch
 
 def seed_everything(seed=42):
-    """Forces strict determinism for perfect reproducibility."""
+    """Fix random seeds and deterministic flags for reproducible runs.
+
+    Reproducibility is central for reviewers: this helper pins Python,
+    NumPy and PyTorch RNGs and configures cuDNN to deterministic mode.
+    """
     print(f"Locking random seeds to {seed} for reproducibility...")
     os.environ['PYTHONHASHSEED'] = str(seed)
     random.seed(seed)
@@ -61,7 +69,8 @@ def main():
         total_nll_loss, total_drift_loss, total_d_loss = 0, 0, 0
         batches = 0
         
-        # Notice we unpack 'd' (Demographics) now
+                # The dataloader yields `d` containing static demographics
+                # (e.g., age, gender). We pass these to the discriminator.
         for x, t, c, y, d, mask in loader:
             x, t, d, mask = x.to(device), t.to(device), d.to(device), mask.to(device)
             
