@@ -9,9 +9,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import roc_curve, auc
+import os
 
 # ==========================================
-# A* Visual Style
+# Visual Style
 # ==========================================
 # Defining a sophisticated palette: Deep Navy, Gold, and clean White/Gray
 NAVY = '#0B2046'
@@ -114,6 +115,10 @@ def plot_auroc():
 
 if __name__ == "__main__":
     print("Generating high-resolution figures for A* submission...")
+    
+    # Create the directory before plotting
+    os.makedirs('results', exist_ok=True)
+    
     plot_evidential_trajectory()
     plot_fairness_density()
     plot_auroc()

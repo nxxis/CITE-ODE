@@ -107,7 +107,7 @@ def plot_latent_tsne(Z, D):
     """Generates an A* quality t-SNE scatter plot of the latent space."""
     print("Generating latent space t-SNE plot...")
     
-    # Conference Palette (Navy, Gold, Light Gray)
+    # Palette (Navy, Gold, Light Gray)
     NAVY = '#0B2046'
     GOLD = '#D4AF37'
     LIGHT_GRAY = '#F5F5F7'
@@ -148,8 +148,10 @@ def plot_latent_tsne(Z, D):
     ax.grid(True, linestyle='--', alpha=0.6, color='white')
     ax.legend(frameon=True, facecolor='white', edgecolor='black')
     
-    plt.savefig('latent_tsne.pdf')
-    print("Saved latent_tsne.pdf")
+    os.makedirs('results', exist_ok=True)
+    plt.savefig('results/latent_tsne.pdf')
+    print("Saved latent_tsne.pdf to results/ directory.")
+    
     plt.close()
 
 def main():
