@@ -19,7 +19,7 @@ NAVY = '#0B2046'
 GOLD = '#D4AF37'
 LIGHT_GRAY = '#F5F5F7'
 
-# Set global Matplotlib parameters for IEEE/ACM LaTeX format
+# Set global Matplotlib parameters
 plt.rcParams.update({
     'font.family': 'serif',
     'font.serif': ['Times New Roman'],
