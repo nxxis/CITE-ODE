@@ -84,26 +84,28 @@ pip install -r requirements.txt
 
 ```plaintext
 CEMR-Fair/
-├── data/
-│   ├── mimic_cemr_cohort.csv    # Static reproducible clinical dataset
-│   └── clinical_mimic.py        # Optimized offline dataloader pipeline
-│
-├── models/
-│   └── tide_ode.py              # Neural ODE + Evidential Head architecture
-│
-├── utils/
-│   └── losses.py                # Evidential NLL & fairness losses
-│
-├── results/
-│   └── latent_tsne.pdf          # Generated latent space visualization
-│
 ├── checkpoints/
-│   └── cemr_fair_final.pth      # Saved trained model weights
-│
-├── train_cemr.py                # Full training pipeline
-├── evaluate_cemr.py             # Evaluation & fairness audit script
-├── requirements_strict.txt      # Frozen dependency manifest
-└── README.md                    # Project documentation
+│   ├── cemr_fair_final.pth      # Final trained weights for CEMR-Fair
+│   └── tide_mimic_final.pth     # Weights for your baseline model
+├── data/
+│   ├── clinical_mimic.py        # Offline dataset pipeline & preprocessing
+│   └── mimic_cemr_cohort.csv    # Static evaluation cohort (450k+ rows)
+├── models/
+│   └── tide_ode.py              # Neural ODE & Evidential architectures
+├── results/
+│   ├── fairness_density.pdf     # Demographic calibration plot
+│   ├── latent_tsne.pdf          # Latent space geometry visualization
+│   ├── roc_curve.pdf            # Validation AUROC curve
+│   └── trajectory_plot.pdf      # Continuous patient trajectory sample
+├── utils/
+│   └── losses.py                # Evidential NLL and drift loss functions
+├── evaluate.py                  # Baseline evaluation script
+├── evaluate_cemr.py             # CEMR-Fair evaluation suite & audit
+├── plot_results.py              # Publication graphic generator
+├── README.md                    # Core repository documentation
+├── requirements.txt             # Frozen environment dependencies
+├── train.py                     # Baseline training script
+└── train_cemr.py                # CEMR-Fair 200-epoch training script
 ```
 
 ---
