@@ -167,8 +167,7 @@ def main():
         print("Error: 'checkpoints/cemr_fair_final.pth' not found.")
         return
 
-    # For evaluation we increase the dataset limit to improve statistical power.
-    loader = get_mimic_dataloader(batch_size=32, limit=500000)
+    loader = get_mimic_dataloader(batch_size=32)
     Z, Y, D, Unc = extract_cemr_features(loader, model, device)
     
     # Use stratified split to ensure the minority mortality class appears
