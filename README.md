@@ -143,7 +143,7 @@ CITE-ODE/
 
 # 📥 Dataset & Cohort Information
 
-To support peer-review reproducibility without requiring live database access, the evaluation cohort has been frozen into a static artifact.
+To support peer-review reproducibility without requiring live database access, the evaluation cohort is stored as an external artifact rather than in Git history.
 
 ## Dataset Details
 
@@ -153,11 +153,22 @@ To support peer-review reproducibility without requiring live database access, t
 - **Signals:** 8 vital signs
 - **Target:** Binary in-hospital mortality
 
-Place the cohort file at:
+Download the cohort into the repository with:
+
+```bash
+pip install gdown
+python scripts/fetch_cohort.py
+```
+
+The script writes the file to:
 
 ```text
 data/mimic_cemr_cohort.csv
 ```
+
+Google Drive source folder:
+
+https://drive.google.com/drive/u/2/folders/1oupz5CcQIMn-16I8KFWeqlpirY0vBCxg
 
 ---
 

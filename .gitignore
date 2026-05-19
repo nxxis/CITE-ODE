@@ -1,0 +1,13 @@
+# Local dataset artifact
+data/mimic_cemr_cohort.csv
+
+# Generated checkpoints and figures
+checkpoints/*.pth
+results/*.pdf
+
+# Python cache
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
