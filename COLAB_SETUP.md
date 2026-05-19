@@ -20,10 +20,40 @@ pip install -r requirements.txt --no-deps
 python -c "import torch,numpy,pandas; print('OK', torch.__version__, numpy.__version__, pandas.__version__)"
 
 # Optional: save Colab environment for exact reproduction
-pip freeze > requirements.txt
+pip freeze > requirements_lock_colab.txt
 ```
 
 Notes
 
 - Replace `cu128` with the CUDA version used by the Colab runtime if necessary.
 - If using a CPU-only session, install the CPU PyTorch wheel instead (see the PyTorch site).
+
+Quick run (mount + execute)
+
+In a Colab notebook cell, run the following sequence to mount Drive, change into the project folder, and execute the run:
+
+```python
+from google.colab import drive
+drive.mount('/content/drive')
+```
+
+```bash
+%cd /content/drive/MyDrive/CITE-ODE   # adjust path if your folder name differs
+# To train models from scratch (5 seeds for CITE-ODE, 3 seeds for GRU):
+# Train CITE-ODE (5 seeds)
+python scripts/run_multiseed_train.py
+
+# Train GRU baseline (3 seeds)
+python scripts/run_multiseed_gru.py
+
+# To evaluate pre-trained models and reproduce paper results:
+python scripts/evaluate_multiseed.py
+python scripts/evaluate_multiseed_gru.py
+python scripts/evaluate_multiseed_gru_blackout.py
+python scripts/evaluate_selective_multiseed_full.py
+
+# Generate paper figures
+python scripts/generate_all_figures.py
+```
+
+Note: If the repository uses different script names, run the equivalent scripts under `scripts/` (for example `scripts/run_multiseed_train.py` and `scripts/evaluate_multiseed.py`).

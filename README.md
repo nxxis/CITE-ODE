@@ -20,11 +20,13 @@ A Neural Ordinary Differential Equation (Neural ODE) backbone models physiologic
 
 Latent trajectories are projected through a Normal-Inverse-Gamma (NIG) evidential head that estimates predictive uncertainty in a single forward pass.
 
-Epistemic uncertainty is computed as:
+Epistemic uncertainty is computed as (KaTeX/LaTeX):
 
-\[
+$$
 u = \frac{\beta}{\alpha - 1}
-\]
+$$
+
+In plain symbols: u = β / (α − 1)
 
 ## 3. Selective Prediction Framework
 
@@ -100,22 +102,24 @@ This mirrors the author's workflow: edit code in Colab, save to Drive, and run t
 
 **Reviewer-friendly: Upload to Google Drive and run in Colab**
 
-If reviewers prefer a frictionless, reproducible flow (the workflow the author used), download the repository ZIP and upload it to your Google Drive, then run everything from a Colab session mounted to Drive. This avoids local wheel/build issues on some Windows/Python combinations.
+If reviewers prefer a frictionless, reproducible flow (the workflow the author used), upload the repository folder (not a ZIP) to Google Drive, or clone the repository directly in Colab, then run everything from a Colab session mounted to Drive. This avoids local wheel/build issues on some Windows/Python combinations.
 
 Steps (reviewer):
 
-1. Download the repository (use the GitHub "Download ZIP" button or `git clone`) and upload the ZIP to your Google Drive.
+1. Upload the repository folder (preferred) to your Google Drive, or in Colab run `git clone https://github.com/nxxis/CITE-ODE.git` to clone directly.
 
-2. In a Colab notebook, mount Google Drive and extract the archive:
+2. In a Colab notebook, mount Google Drive:
 
 ```python
 from google.colab import drive
 drive.mount('/content/drive')
 ```
 
+If you uploaded the folder to Drive, change directory into the uploaded project folder on Drive. If you cloned in Colab, `cd` into the cloned repo root.
+
 ```bash
-!unzip /content/drive/MyDrive/CEMR-Fair.zip -d /content/drive/MyDrive/
-%cd /content/drive/MyDrive/CEMR-Fair
+# Example (adjust the folder name if different):
+%cd /content/drive/MyDrive/CITE-ODE
 ```
 
 3. Install the matching PyTorch wheel for the Colab CUDA runtime, then the remaining requirements:
@@ -138,7 +142,28 @@ Notes:
 
 Quick reviewer flow (one-line)
 
-Upload the repository folder (not a ZIP) to Google Drive, or clone the repository directly from GitHub in Colab → open Google Colab and mount Drive → change directory into the project folder on Drive (or the cloned folder) → install the matching PyTorch wheel and `requirements.txt` → run `smoke_test.py` or the scripts in `scripts/` to reproduce results. See [COLAB_SETUP.md](COLAB_SETUP.md) for the exact commands to copy-paste.
+Upload the repository folder (not a ZIP) to Google Drive, or clone the repository directly from GitHub in Colab → open Google Colab and mount Drive → change directory into the project folder on Drive (or the cloned folder) → install the matching PyTorch wheel and `requirements.txt` → run the multi-seed scripts in `scripts/` to reproduce results. See [COLAB_SETUP.md](COLAB_SETUP.md) for the exact commands to copy-paste.
+
+Quick run (mount + execute)
+
+In Colab run:
+
+```python
+from google.colab import drive
+drive.mount('/content/drive')
+```
+
+```bash
+%cd /content/drive/MyDrive/CITE-ODE
+# To evaluate pre-trained models and reproduce paper results:
+python scripts/evaluate_multiseed.py
+python scripts/evaluate_multiseed_gru.py
+python scripts/evaluate_multiseed_gru_blackout.py
+python scripts/evaluate_selective_multiseed_full.py
+python scripts/generate_all_figures.py
+```
+
+If the project uses different filenames, run the equivalent scripts in `scripts/` (for example `scripts/run_multiseed_train.py` and `scripts/evaluate_multiseed.py`).
 
 ---
 
