@@ -57,15 +57,13 @@ def main():
     
     bounds = run_bootstrap_audit(y_te, y_prob_te, n_resamples=1000)
     
-    print("\n=====================================================================================")
-    print("📋 ICDM SCIENTIFIC VALIDITY AUDIT (10K LONGITUDINAL COHORT)")
-    print("=====================================================================================")
-    print(f"🏥 Global Predictive AUROC:    {roc_auc_score(y_te, y_prob_te):.4f} | 95% CI: ({bounds['auroc_ci'][0]:.4f}, {bounds['auroc_ci'][1]:.4f})")
-    print(f"🏥 Global Predictive AUPRC:    {average_precision_score(y_te, y_prob_te):.4f} | 95% CI: ({bounds['auprc_ci'][0]:.4f}, {bounds['auprc_ci'][1]:.4f})")
-    print(f"🎯 Expected Calibration Error: {calculate_ece(y_te, y_prob_te):.4f} | 95% CI: ({bounds['ece_ci'][0]:.4f}, {bounds['ece_ci'][1]:.4f})")
-    print(f"📉 Total Clinical Brier Score:  {brier_score_loss(y_te, y_prob_te):.4f} | 95% CI: ({bounds['brier_ci'][0]:.4f}, {bounds['brier_ci'][1]:.4f})")
-    
-    print("\n⚖️ MULTI-AXIS DISPARITY MATRIX")
+    print("\n=== ICDM scientific validity audit (10k longitudinal cohort) ===")
+    print(f"Global predictive AUROC: {roc_auc_score(y_te, y_prob_te):.4f} | 95% CI: ({bounds['auroc_ci'][0]:.4f}, {bounds['auroc_ci'][1]:.4f})")
+    print(f"Global predictive AUPRC: {average_precision_score(y_te, y_prob_te):.4f} | 95% CI: ({bounds['auprc_ci'][0]:.4f}, {bounds['auprc_ci'][1]:.4f})")
+    print(f"Expected calibration error: {calculate_ece(y_te, y_prob_te):.4f} | 95% CI: ({bounds['ece_ci'][0]:.4f}, {bounds['ece_ci'][1]:.4f})")
+    print(f"Clinical Brier score: {brier_score_loss(y_te, y_prob_te):.4f} | 95% CI: ({bounds['brier_ci'][0]:.4f}, {bounds['brier_ci'][1]:.4f})")
+
+    print("\nMulti-axis subgroup disparity summary:")
     print("-" * 85)
     
     groups = {
@@ -81,9 +79,9 @@ def main():
     
     for name, mask in groups.items():
         if sum(mask) > 5 and len(np.unique(y_te[mask])) > 1:
-            print(f"👤 {name:<12} | AUROC: {roc_auc_score(y_te[mask], y_prob_te[mask]):.4f} | ECE: {calculate_ece(y_te[mask], y_prob_te[mask]):.4f} | Epistemic Unc: {np.mean(unc_te[mask]):.4f}")
+            print(f"{name:<12} | AUROC: {roc_auc_score(y_te[mask], y_prob_te[mask]):.4f} | ECE: {calculate_ece(y_te[mask], y_prob_te[mask]):.4f} | Epistemic Unc: {np.mean(unc_te[mask]):.4f}")
         else:
-            print(f"👤 {name:<12} | Insufficient data density.")
+            print(f"{name:<12} | Insufficient data density.")
 
 if __name__ == "__main__":
     main()

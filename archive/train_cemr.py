@@ -3,6 +3,22 @@ import torch.nn as nn, torch.optim as optim
 from data.clinical_mimic import get_mimic_dataloader
 from models.tide_ode import CEMREvidentialODE
 
+"""Training script for the CEMR latent ODE with evidential output head.
+
+This file implements the canonical training loop for the latent ODE model
+(`CEMREvidentialODE`) used in the paper. The model predicts clinical
+targets and exposes evidential parameters (gamma, v, alpha, beta) that are
+used to compute a task NLL with an evidential regression loss. An
+adversarial discriminator learns to predict a protected attribute (gender)
+and is used adversarially in the main optimization objective to encourage
+demographic invariance.
+
+Behavior and outputs:
+- Runs a multi-objective training loop alternating discriminator and model
+    updates.
+- Saves the final model to `checkpoints/cemr_fair_final.pth`.
+"""
+
 def seed_everything(seed=42):
     os.environ['PYTHONHASHSEED'] = str(seed)
     random.seed(seed)
@@ -29,7 +45,7 @@ def main():
     opt_d = optim.Adam(model.discriminator.parameters(), lr=1e-3)
     criterion_task = nn.BCEWithLogitsLoss()
     
-    print("🚀 Optimizing Longitudinal Latent ODE Matrix over 10k Cohort...")
+    print("Optimizing longitudinal latent ODE model on 10k cohort...")
     for epoch in range(15):
         model.train()
         for x, t, c, y, d, mask in loader:
@@ -63,6 +79,6 @@ def main():
         print(f"Epoch [{epoch+1:02d}/15] | Evidential NLL: {loss_nll.item():.4f} | Task BCE: {loss_task.item():.4f} | Adv Loss: {loss_d.item():.4f}")
         
     torch.save(model.state_dict(), "checkpoints/cemr_fair_final.pth")
-    print("💾 Model weights successfully saved to Google Drive.")
+    print("Model weights saved to checkpoints/cemr_fair_final.pth")
 
 if __name__ == "__main__": main()

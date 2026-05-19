@@ -65,7 +65,7 @@ def main():
     plt.legend(loc='lower right')
     plt.tight_layout()
     plt.savefig('plots/figure2_roc.pdf', dpi=300)
-    print("✅ Figure 2 saved: plots/figure2_roc.pdf")
+    print("Figure 2 saved: plots/figure2_roc.pdf")
 
 if __name__ == "__main__":
     main()

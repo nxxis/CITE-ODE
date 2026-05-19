@@ -77,7 +77,7 @@ def main():
     os.makedirs("plots", exist_ok=True)
     plt.savefig('plots/figure1_reliability.pdf', dpi=300)
     plt.savefig('plots/figure1_reliability.png', dpi=300)
-    print("✅ Figure 1 saved: plots/figure1_reliability.pdf")
+    print("Figure 1 saved: plots/figure1_reliability.pdf")
 
 if __name__ == "__main__":
     main()

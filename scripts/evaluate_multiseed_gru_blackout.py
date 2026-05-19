@@ -1,3 +1,10 @@
+"""Evaluate GRU baseline checkpoints under a contiguous blackout stress.
+
+This script applies a contiguous zero-out window to input trajectories to
+simulate clinical telemetry blackout and measures predictive degradation
+across seeds using AUROC and ECE.
+"""
+
 import os, numpy as np
 import torch
 from sklearn.model_selection import train_test_split
@@ -7,6 +14,12 @@ from run_baseline_gru import GRUBaselineNet
 from utils.metrics import calculate_ece
 
 def apply_contiguous_blackout(x, window_len=15):
+    """Return a copy of `x` with a contiguous window of features zeroed.
+
+    Args:
+        x: tensor of shape (batch, seq_len, features)
+        window_len: length of the blackout window in time-steps
+    """
     x_stressed = x.clone()
     batch_size, seq_len, _ = x.shape
     start_idx = seq_len // 2 - window_len // 2
@@ -45,16 +58,16 @@ def main():
     for seed in seeds:
         model_path = f"checkpoints/baseline_gru_seed{seed}.pth"
         if not os.path.exists(model_path):
-            print(f"Warning: {model_path} not found, skipping seed {seed}")
+            print(f"Warning: model not found at {model_path}; skipping seed {seed}.")
             continue
         metrics = evaluate_gru_blackout_one_model(model_path, device, loader)
         results['auroc'].append(metrics['auroc'])
         results['ece'].append(metrics['ece'])
-        print(f"GRU Seed {seed}: Blackout AUROC={metrics['auroc']:.4f}, ECE={metrics['ece']:.4f}")
+        print(f"GRU seed {seed} results: Blackout AUROC={metrics['auroc']:.4f}, ECE={metrics['ece']:.4f}")
     if not results['auroc']:
-        print("No models found.")
+        print("No models found. Exiting.")
         return
-    print("\n===== GRU Multi‑Seed Blackout Results =====")
+    print("\nGRU multi-seed blackout results:")
     print(f"AUROC: {np.mean(results['auroc']):.4f} ± {np.std(results['auroc']):.4f}")
     print(f"ECE:   {np.mean(results['ece']):.4f} ± {np.std(results['ece']):.4f}")
 

@@ -90,7 +90,7 @@ def main():
     stress_levels = [0.0, 0.30, 0.50, 0.75]
     
     print("\n=====================================================================================")
-    print("🧪 CLINICAL TELEMETRY SPARSITY ROBUSTNESS STRESS TEST")
+    print("Clinical telemetry sparsity robustness stress test")
     print("=====================================================================================")
     print(f"{'Data Dropout Rate':<20} | {'ODE AUROC':<10} | {'GRU AUROC':<10} | {'ODE ECE':<8} | {'GRU ECE':<8} | {'ODE Epistemic Unc'}")
     print("-" * 90)

@@ -1,3 +1,10 @@
+"""Launcher script: train CEMR model across multiple random seeds.
+
+This simple wrapper invokes `train_cemr_seed.py` once per seed and stores
+each resulting checkpoint under `checkpoints/` following the repository's
+naming convention.
+"""
+
 import subprocess
 import os
 

@@ -64,7 +64,7 @@ def main():
     )
     
     print("\n=====================================================================================")
-    print("🧪 CITE-ODE SELECTIVE PREDICTION VALIDATION (6-HOUR BLACKOUT STRESS)")
+    print("CITE-ODE selective prediction validation (6-hour blackout stress)")
     print("=====================================================================================")
     print(f"{'Abstention Rate (Dropped)':<25} | {'Retained Sample N':<18} | {'Retained AUROC':<15} | {'Retained ECE'}")
     print("-" * 85)

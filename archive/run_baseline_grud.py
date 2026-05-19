@@ -66,6 +66,15 @@ class GRUDBaselineNet(nn.Module):
         return h, logits
 
 def main():
+    """Train and evaluate a GRU-D baseline that models irregular sampling.
+
+    The GRU-D variant accounts for irregular time gaps between observations
+    by applying learned exponential decay factors to inputs and hidden
+    states. Training uses the dataloader from `data.clinical_mimic` and
+    evaluates final predictive performance with bootstrap confidence
+    intervals. The trained checkpoint is saved to
+    `checkpoints/baseline_grud.pth`.
+    """
     seed_everything(42)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     loader = get_mimic_dataloader()
@@ -74,7 +83,7 @@ def main():
     optimizer = optim.Adam(model.parameters(), lr=1e-3)
     criterion = nn.BCEWithLogitsLoss()
 
-    print("🚀 Optimizing Irregular GRU-D Baseline Network over 10k Cohort...")
+    print("Optimizing irregular GRU-D baseline network on 10k cohort...")
     for epoch in range(15):
         model.train()
         total_loss = 0.0
@@ -105,13 +114,13 @@ def main():
     bounds = run_bootstrap_audit(y_te, y_prob_te, n_resamples=1000)
 
     print("\n=====================================================================================")
-    print("📋 IRREGULAR DECAY GRU-D BASELINE AUDIT RESULTS (10K COHORT)")
+    print("Irregular decay GRU-D baseline audit results (10k cohort)")
     print("=====================================================================================")
-    print(f"🏥 Global Predictive AUROC:    {roc_auc_score(y_te, y_prob_te):.4f} | 95% CI: ({bounds['auroc_ci'][0]:.4f}, {bounds['auroc_ci'][1]:.4f})")
-    print(f"🎯 Expected Calibration Error: {calculate_ece(y_te, y_prob_te):.4f} | 95% CI: ({bounds['ece_ci'][0]:.4f}, {bounds['ece_ci'][1]:.4f})")
+    print(f"Global predictive AUROC: {roc_auc_score(y_te, y_prob_te):.4f} | 95% CI: ({bounds['auroc_ci'][0]:.4f}, {bounds['auroc_ci'][1]:.4f})")
+    print(f"Expected calibration error (ECE): {calculate_ece(y_te, y_prob_te):.4f} | 95% CI: ({bounds['ece_ci'][0]:.4f}, {bounds['ece_ci'][1]:.4f})")
     
     os.makedirs("checkpoints", exist_ok=True)
     torch.save(model.state_dict(), "checkpoints/baseline_grud.pth")
-    print("\n💾 GRU-D weights successfully saved to Drive.")
+    print("\nGRU-D weights saved to checkpoints/baseline_grud.pth")
 
 if __name__ == "__main__": main()

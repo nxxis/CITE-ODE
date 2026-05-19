@@ -46,4 +46,4 @@ plt.title('Selective prediction: CITE-ODE vs stratified random control (5‑seed
 plt.tight_layout()
 plt.savefig('plots/figure2_selective_variance.pdf', bbox_inches='tight')
 plt.savefig('plots/figure2_selective_variance.png', dpi=300)
-print("✅ Final selective prediction figure saved.")
+print("Final selective prediction figure saved.")

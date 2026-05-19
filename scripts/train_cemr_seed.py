@@ -1,3 +1,11 @@
+"""Train the CEMR latent ODE model for a single random seed.
+
+This script trains the canonical model architecture with an evidential
+regression head and an adversarial discriminator for demographic
+invariance. Use `scripts/run_multiseed_train.py` to run across multiple
+seeds.
+"""
+
 import os, random, torch, numpy as np
 import argparse
 import torch.nn as nn, torch.optim as optim
@@ -25,6 +33,12 @@ def main():
     parser.add_argument('--seed', type=int, required=True, help='Random seed')
     parser.add_argument('--output', type=str, required=True, help='Output checkpoint path')
     args = parser.parse_args()
+
+    """Train the CEMR model for the supplied seed and write a checkpoint.
+
+    The loop alternates discriminator and model updates, logs per-epoch
+    losses, and writes the final state dict to the specified output.
+    """
 
     seed_everything(args.seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

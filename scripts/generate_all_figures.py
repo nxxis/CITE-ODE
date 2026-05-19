@@ -75,7 +75,7 @@ def generate_figure1():
     plt.tight_layout()
     plt.savefig('plots/figure1_reliability.pdf', dpi=300)
     plt.savefig('plots/figure1_reliability.png', dpi=300)
-    print("✅ Figure 1 saved (reliability diagram).")
+    print("Figure 1 saved (reliability diagram).")
 
 # ------------------------------
 # Figure 2: Selective Prediction (Multi‑Seed, with variance bands)
@@ -113,7 +113,7 @@ def generate_figure2():
     plt.tight_layout()
     plt.savefig('plots/figure2_selective_variance.pdf', bbox_inches='tight')
     plt.savefig('plots/figure2_selective_variance.png', dpi=300)
-    print("✅ Figure 2 saved (selective prediction with variance bands).")
+    print("Figure 2 saved (selective prediction with variance bands).")
 
 # ------------------------------
 # Figure 3: Subgroup Scatter Plot (Trade‑off between AUROC and ECE)
@@ -147,13 +147,25 @@ def generate_figure3():
     plt.tight_layout()
     plt.savefig('plots/figure3_subgroup_scatter.pdf', dpi=300)
     plt.savefig('plots/figure3_subgroup_scatter.png', dpi=300)
-    print("✅ Figure 3 saved (subgroup scatter plot).")
+    print("Figure 3 saved (subgroup scatter plot).")
 
 # ------------------------------
 # Main
 # ------------------------------
 if __name__ == "__main__":
     generate_figure1()
+def main():
+    """Generate all manuscript figures and save to the `plots/` directory.
+
+    This utility bundles the plotting routines so that figures can be
+    reproduced deterministically from the evaluation outputs. Each helper
+    writes high-resolution figures suitable for inclusion in the paper.
+    """
+    # Generate the figures used in the manuscript and write to disk.
+    generate_figure1()
     generate_figure2()
     generate_figure3()
-    print("\n✅ All figures saved to 'plots/' directory.")
+    print("Figure 1 saved (reliability diagram).")
+    print("Figure 2 saved (selective prediction with variance bands).")
+    print("Figure 3 saved (subgroup scatter plot).")
+    print("\nAll figures saved to 'plots/' directory.")

@@ -1,3 +1,10 @@
+"""Launcher script for training GRU baselines across multiple seeds.
+
+Runs `train_gru_seed.py` for a short list of seeds and writes checkpoints
+into `checkpoints/`. This wrapper is provided for convenience when
+reproducing baseline runs locally or in a Colab session.
+"""
+
 import subprocess
 import os
 

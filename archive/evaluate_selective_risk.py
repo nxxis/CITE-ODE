@@ -58,7 +58,7 @@ def main():
     _, y_prob_te, _, y_te, _, unc_te = train_test_split(Y_prob, Y_true, Unc_val, test_size=0.2, random_state=42, stratify=Y_true)
 
     print("\n=========================================================================================================")
-    print("📋 TABLE III: SELECTIVE PREDICTION & STRATIFIED RANDOM CONTROL (6-HOUR BLACKOUT)")
+    print("Table III: selective prediction and stratified random control (6-hour blackout)")
     print("=========================================================================================================")
     print(f"{'Decision Coverage':<18} | {'Retained N':<12} | {'Prevalence':<12} | {'CITE-ODE ECE':<14} | {'Control ECE':<14} | {'BSS (Skill)'}")
     print("-" * 105)

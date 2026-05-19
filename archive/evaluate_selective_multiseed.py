@@ -67,20 +67,20 @@ def main():
     for seed in seeds:
         model_path = f"checkpoints/cemr_fair_seed{seed}.pth"
         if not os.path.exists(model_path):
-            print(f"Warning: {model_path} not found, skipping seed {seed}")
+            print(f"Warning: model not found at {model_path}; skipping seed {seed}.")
             continue
         cite_ece, control_ece = evaluate_selective_one_model(model_path, device, loader, coverage=0.8)
         cite_eces.append(cite_ece)
         control_eces.append(control_ece)
-        print(f"Seed {seed}: CITE-ECE={cite_ece:.4f}, Control ECE={control_ece:.4f}")
+        print(f"Seed {seed} results: CITE-ECE={cite_ece:.4f}, Control ECE={control_ece:.4f}")
     
     if len(cite_eces) == 0:
         print("No models found. Exiting.")
         return
-    
-    print("\n===== Multi‑Seed Selective Prediction (80% Coverage) =====")
+
+    print("\nMulti-seed selective prediction (80% coverage):")
     print(f"CITE-ODE ECE: {np.mean(cite_eces):.4f} ± {np.std(cite_eces):.4f}")
-    print(f"Stratified Control ECE: {np.mean(control_eces):.4f} ± {np.std(control_eces):.4f}")
+    print(f"Stratified control ECE: {np.mean(control_eces):.4f} ± {np.std(control_eces):.4f}")
 
 if __name__ == "__main__":
     main()

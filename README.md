@@ -6,7 +6,7 @@ Designed for submission to the **IEEE International Conference on Data Mining (I
 
 ---
 
-# 📌 Framework Overview
+# Framework Overview
 
 ICU telemetry data is sparse, irregularly sampled, and frequently interrupted by long contiguous gaps caused by monitor disconnects, workflow changes, and missing charting. Traditional sequence models often rely on imputation strategies that distort temporal structure and provide no principled estimate of epistemic uncertainty.
 
@@ -36,7 +36,7 @@ A stratified random control preserving class prevalence isolates the effect of u
 
 ---
 
-# 🔧 Installation Guide
+# Installation Guide
 
 The repository is fully reproducible and follows the Machine Learning Reproducibility Checklist.
 
@@ -48,7 +48,7 @@ The repository is fully reproducible and follows the Machine Learning Reproducib
 
 ---
 
-# ⚙️ Reproducibility & Environment
+# Reproducibility & Environment
 
 The experiments reported in this repository were executed under a tightly controlled environment to ensure reproducibility. We recommend reproducing the environment exactly when preparing artifacts for review.
 
@@ -67,7 +67,7 @@ Key package versions used in the paper
 - Seaborn: `0.13.2`
 - Google Cloud BigQuery: `3.41.0`
 
-Use Conda or Colab instead of local virtualenvs on Windows when possible (recommended for reviewers). The Conda and Colab instructions below provide the tested installation flow and exact wheel commands for PyTorch.
+Use Conda or Colab instead of local virtualenvs on Windows when possible (recommended for users). The Conda and Colab instructions below provide the tested installation flow and exact wheel commands for PyTorch.
 
 Conda (recommended on Windows when wheels are problematic)
 
@@ -100,11 +100,11 @@ When iterating on notebooks in Colab you can write Python modules or scripts dir
 
 This mirrors the author's workflow: edit code in Colab, save to Drive, and run the project's scripts from the mounted Drive copy.
 
-**Reviewer-friendly: Upload to Google Drive and run in Colab**
+**User-friendly: Upload to Google Drive and run in Colab**
 
-If reviewers prefer a frictionless, reproducible flow (the workflow the author used), upload the repository folder (not a ZIP) to Google Drive, or clone the repository directly in Colab, then run everything from a Colab session mounted to Drive. This avoids local wheel/build issues on some Windows/Python combinations.
+If users prefer a frictionless, reproducible flow (the workflow the author used), upload the repository folder (not a ZIP) to Google Drive, or clone the repository directly in Colab, then run everything from a Colab session mounted to Drive. This avoids local wheel/build issues on some Windows/Python combinations.
 
-Steps (reviewer):
+Steps (users):
 
 1. Upload the repository folder (preferred) to your Google Drive, or in Colab run `git clone https://github.com/nxxis/CITE-ODE.git` to clone directly.
 
@@ -140,7 +140,7 @@ Notes:
 - Replace `cu128` with the CUDA version available in the Colab runtime if needed.
 - This Drive+Colab flow mirrors the author's reproducible workflow and avoids local binary build failures.
 
-Quick reviewer flow (one-line)
+Quick user flow (one-line)
 
 Upload the repository folder (not a ZIP) to Google Drive, or clone the repository directly from GitHub in Colab → open Google Colab and mount Drive → change directory into the project folder on Drive (or the cloned folder) → install the matching PyTorch wheel and `requirements.txt` → run the multi-seed scripts in `scripts/` to reproduce results. See [COLAB_SETUP.md](COLAB_SETUP.md) for the exact commands to copy-paste.
 
@@ -167,7 +167,7 @@ If the project uses different filenames, run the equivalent scripts in `scripts/
 
 ---
 
-# 📂 Repository Structure
+# Repository Structure
 
 ```text
 CITE-ODE/
@@ -215,7 +215,7 @@ CITE-ODE/
 
 ---
 
-# 📥 Dataset & Cohort Information
+# Dataset & Cohort Information
 
 To support peer-review reproducibility without requiring live database access, the evaluation cohort is stored as an external artifact rather than in Git history.
 
@@ -268,7 +268,7 @@ ls -lh data/mimic_cemr_cohort.csv
 
 ---
 
-# 🚀 Training & Evaluation
+# Training & Evaluation
 
 All experiments use:
 
@@ -380,7 +380,7 @@ Figures are exported as:
 
 ---
 
-# 🏆 Experimental Results
+# Experimental Results
 
 | Metric                  | CITE-ODE (5 seeds)  | GRU (3 seeds)     |
 | ----------------------- | ------------------- | ----------------- |
@@ -395,7 +395,7 @@ Figures are exported as:
 
 ---
 
-# 🔍 Key Findings
+# Key Findings
 
 - Uncertainty-guided filtering reduces conditional calibration error by more than 50% at 80% coverage.
 - Stratified random controls preserving prevalence do not exhibit equivalent calibration improvements.
@@ -405,7 +405,7 @@ Figures are exported as:
 
 ---
 
-# 🎨 Visualization Assets
+# Visualization Assets
 
 The evaluation pipeline automatically generates publication-ready figures directly from final multi-seed outputs.
 
@@ -422,7 +422,7 @@ Available formats:
 
 ---
 
-# 📝 Citation
+# Citation
 
 ```bibtex
 pending
@@ -430,7 +430,7 @@ pending
 
 ---
 
-# 📧 Contact
+# Contact
 
 For questions, issues, or reproducibility concerns, please open a GitHub issue.
 

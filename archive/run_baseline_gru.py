@@ -34,7 +34,21 @@ class GRUBaselineNet(nn.Module):
         return final_hidden, logits
 
 def main():
-    seed_everything(42)
+        """Train and evaluate a discrete GRU baseline on the MIMIC-style cohort.
+
+        This script trains a small GRU classifier on the cohort provided by
+        `data.clinical_mimic.get_mimic_dataloader`. After training it runs a
+        bootstrap-based evaluation (AUROC, AUPRC, ECE, Brier) on the held-out
+        test split and prints summary statistics. Model weights are saved to
+        `checkpoints/baseline_gru.pth`.
+
+        Notes:
+        - The dataloader yields (x, t, c, y, d, mask) where `mask` denotes
+            valid time-steps; the code extracts the final valid embedding for
+            classification.
+        - Random seeds are set for reproducibility.
+        """
+        seed_everything(42)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
     loader = get_mimic_dataloader()
@@ -42,7 +56,7 @@ def main():
     optimizer = optim.Adam(model.parameters(), lr=1e-3)
     criterion = nn.BCEWithLogitsLoss()
 
-    print("🚀 Optimizing Discrete GRU Baseline on 10k Longitudinal Footprint...")
+    print("Optimizing discrete GRU baseline on 10k longitudinal footprint...")
     for epoch in range(15):
         model.train()
         total_loss = 0.0
@@ -85,14 +99,14 @@ def main():
     bounds = run_bootstrap_audit(y_te, y_prob_te, n_resamples=1000)
 
     print("\n=====================================================================================")
-    print("📋 DISCRETE RECURRENT BASELINE AUDIT (VARIANT A: NO ODE - 10K COHORT)")
+    print("Discrete recurrent baseline audit (variant A: no ODE - 10k cohort)")
     print("=====================================================================================")
-    print(f"🏥 Global Predictive AUROC:    {roc_auc_score(y_te, y_prob_te):.4f} | 95% CI: ({bounds['auroc_ci'][0]:.4f}, {bounds['auroc_ci'][1]:.4f})")
-    print(f"🏥 Global Predictive AUPRC:    {average_precision_score(y_te, y_prob_te):.4f} | 95% CI: ({bounds['auprc_ci'][0]:.4f}, {bounds['auprc_ci'][1]:.4f})")
-    print(f"🎯 Expected Calibration Error: {calculate_ece(y_te, y_prob_te):.4f} | 95% CI: ({bounds['ece_ci'][0]:.4f}, {bounds['ece_ci'][1]:.4f})")
-    print(f"📉 Total Clinical Brier Score:  {brier_score_loss(y_te, y_prob_te):.4f} | 95% CI: ({bounds['brier_ci'][0]:.4f}, {bounds['brier_ci'][1]:.4f})")
+    print(f"Global predictive AUROC: {roc_auc_score(y_te, y_prob_te):.4f} | 95% CI: ({bounds['auroc_ci'][0]:.4f}, {bounds['auroc_ci'][1]:.4f})")
+    print(f"Global predictive AUPRC: {average_precision_score(y_te, y_prob_te):.4f} | 95% CI: ({bounds['auprc_ci'][0]:.4f}, {bounds['auprc_ci'][1]:.4f})")
+    print(f"Expected calibration error (ECE): {calculate_ece(y_te, y_prob_te):.4f} | 95% CI: ({bounds['ece_ci'][0]:.4f}, {bounds['ece_ci'][1]:.4f})")
+    print(f"Total clinical Brier score:  {brier_score_loss(y_te, y_prob_te):.4f} | 95% CI: ({bounds['brier_ci'][0]:.4f}, {bounds['brier_ci'][1]:.4f})")
     
-    print("\n⚖️ POST-HOC SUBGROUP DISPARITY MATRIX")
+    print("\nPost-hoc subgroup disparity matrix")
     print("-" * 85)
     groups = {
         "Female": d_te[:, 1] == 0, 
@@ -108,12 +122,12 @@ def main():
         if sum(mask) > 5 and len(np.unique(y_te[mask])) > 1:
             g_auc = roc_auc_score(y_te[mask], y_prob_te[mask])
             g_ece = calculate_ece(y_te[mask], y_prob_te[mask])
-            print(f"👤 {name:<12} | AUROC: {g_auc:.4f} | ECE: {g_ece:.4f}")
+            print(f"{name:<12} | AUROC: {g_auc:.4f} | ECE: {g_ece:.4f}")
         else:
-            print(f"👤 {name:<12} | Insufficient data density.")
+            print(f"{name:<12} | Insufficient data density.")
 
     torch.save(model.state_dict(), "checkpoints/baseline_gru.pth")
-    print("\n💾 10k GRU Baseline weights saved cleanly to Drive.")
+    print("\n10k GRU baseline weights saved to checkpoints/baseline_gru.pth")
 
 if __name__ == "__main__":
     main()

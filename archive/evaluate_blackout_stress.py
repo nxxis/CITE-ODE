@@ -68,11 +68,9 @@ def main():
     _, gru_te, _, _ = train_test_split(np.concatenate(all_gru), Y_true, test_size=0.2, random_state=42, stratify=Y_true)
     _, grud_te, _, _ = train_test_split(np.concatenate(all_grud), Y_true, test_size=0.2, random_state=42, stratify=Y_true)
     
-    print("\n=====================================================================================")
-    print("🧪 CLINICAL STRESS TEST RESULTS: 6-HOUR CONTIGUOUS TELEMETRY BLACKOUT")
-    print("=====================================================================================")
-    print(f"📊 Vanilla GRU Baseline | AUROC: {roc_auc_score(y_te, gru_te):.4f} | ECE: {calculate_ece(y_te, gru_te):.4f}")
-    print(f"📊 Irregular GRU-D      | AUROC: {roc_auc_score(y_te, grud_te):.4f} | ECE: {calculate_ece(y_te, grud_te):.4f}")
-    print(f"🛡️ Proposed CITE-ODE    | AUROC: {roc_auc_score(y_te, ode_te):.4f} | ECE: {calculate_ece(y_te, ode_te):.4f}")
+    print("\n=== Clinical stress test: 6-hour contiguous telemetry blackout ===")
+    print(f"Vanilla GRU baseline       | AUROC: {roc_auc_score(y_te, gru_te):.4f} | ECE: {calculate_ece(y_te, gru_te):.4f}")
+    print(f"Irregular GRU-D            | AUROC: {roc_auc_score(y_te, grud_te):.4f} | ECE: {calculate_ece(y_te, grud_te):.4f}")
+    print(f"Proposed CITE-ODE          | AUROC: {roc_auc_score(y_te, ode_te):.4f} | ECE: {calculate_ece(y_te, ode_te):.4f}")
 
 if __name__ == "__main__": main()

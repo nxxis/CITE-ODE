@@ -1,3 +1,12 @@
+"""Evaluate pre-trained CEMR models across multiple random seeds.
+
+This script loads checkpoints saved at `checkpoints/cemr_fair_seed{seed}.pth`,
+runs each model on the canonical dataloader, and computes aggregate
+performance metrics (AUROC, AUPRC, ECE, Brier) using a held-out split.
+
+The outputs are printed as mean ± std across evaluated seeds.
+"""
+
 import os, numpy as np
 import torch
 from sklearn.model_selection import train_test_split
@@ -35,6 +44,13 @@ def evaluate_one_model(model_path, device, loader):
     }
 
 def main():
+    """Evaluate saved checkpoints for a list of seeds and print aggregates.
+
+    The function expects model checkpoints to follow the naming convention
+    `checkpoints/cemr_fair_seed{seed}.pth`. Missing checkpoints are skipped
+    with a warning.
+    """
+
     seeds = [42, 123, 456, 789, 101112]
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     loader = get_mimic_dataloader()
@@ -42,14 +58,13 @@ def main():
     for seed in seeds:
         model_path = f"checkpoints/cemr_fair_seed{seed}.pth"
         if not os.path.exists(model_path):
-            print(f"Warning: {model_path} not found, skipping seed {seed}")
+            print(f"Warning: model not found at {model_path}; skipping seed {seed}.")
             continue
         metrics = evaluate_one_model(model_path, device, loader)
         for k, v in metrics.items():
             results[k].append(v)
-        print(f"Seed {seed}: AUROC={metrics['auroc']:.4f}, ECE={metrics['ece']:.4f}")
-
-    print("\n===== Multi‑Seed Aggregated Results =====")
+        print(f"Seed {seed} results: AUROC={metrics['auroc']:.4f}, ECE={metrics['ece']:.4f}")
+    print("\nMulti-Seed aggregated results:")
     for k, vlist in results.items():
         mean_val = np.mean(vlist)
         std_val = np.std(vlist)

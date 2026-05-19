@@ -35,7 +35,7 @@ def main():
     plt.tight_layout()
     os.makedirs("plots", exist_ok=True)
     plt.savefig('plots/figure4_subgroup.pdf', dpi=300)
-    print("✅ Figure 4 saved: plots/figure4_subgroup.pdf")
+    print("Figure 4 saved: plots/figure4_subgroup.pdf")
 
 if __name__ == "__main__":
     main()

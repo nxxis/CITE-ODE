@@ -28,7 +28,7 @@ def main():
     optimizer = optim.Adam(model.parameters(), lr=1e-3)
     criterion_task = nn.BCEWithLogitsLoss()
     
-    print("🧪 Optimizing Ablation Variant C (Latent ODE No Adversary) over 10k Cohort...")
+    print("Optimizing ablation variant C (latent ODE without adversary) on 10k cohort...")
     for epoch in range(15):
         model.train()
         for x, t, c, y, d, mask in loader:

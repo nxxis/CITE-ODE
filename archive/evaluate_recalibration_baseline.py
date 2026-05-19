@@ -9,7 +9,7 @@ def temperature_scale(logits, temp=1.5):
 def main():
     np.random.seed(42)
     print("=====================================================================================")
-    print("🧪 POST-HOC RECALIBRATION VS CITE-ODE EVIDENTIAL RANKING (6-HOUR BLACKOUT)")
+    print("Post-hoc recalibration vs. CITE-ODE evidential ranking (6-hour blackout)")
     print("=====================================================================================")
     
     # Simulating a 2000-sample validation cohort under clinical blackout stress
@@ -23,9 +23,9 @@ def main():
     # Apply post-hoc Temperature Scaling optimized on validation split
     gru_probs_scaled = temperature_scale(gru_logits, temp=1.65)
     
-    print(f"📊 Uncalibrated Vanilla GRU ECE:      {calculate_ece(y_true, gru_probs_raw):.4f}")
-    print(f"🔥 Post-Hoc Temperature Scaled GRU ECE: {calculate_ece(y_true, gru_probs_scaled):.4f}")
-    print(f"🛡️ CITE-ODE Single-Pass Evidential ECE: 0.0183 (From Table III)")
+    print(f"Uncalibrated Vanilla GRU ECE: {calculate_ece(y_true, gru_probs_raw):.4f}")
+    print(f"Post-hoc temperature-scaled GRU ECE: {calculate_ece(y_true, gru_probs_scaled):.4f}")
+    print("CITE-ODE single-pass evidential ECE (reference): 0.0183 (Table III)")
     print("-" * 85)
     
     # Evaluate selective prediction filtering under post-hoc scaling
@@ -37,9 +37,9 @@ def main():
     r_y = y_true[retained_mask]
     r_probs = gru_probs_scaled[retained_mask]
     
-    print("📋 Re-Calibrated Baseline Selective Truncation Analysis (80% Coverage Tier):")
-    print(f"   -> Retained Scaled GRU Conditional ECE: {calculate_ece(r_y, r_probs):.4f}")
-    print(f"   -> Retained CITE-ODE Conditional ECE:   0.0034 (From Table III)")
+    print("Re-calibrated baseline selective truncation analysis (80% coverage):")
+    print(f"  Retained scaled GRU conditional ECE: {calculate_ece(r_y, r_probs):.4f}")
+    print("  Retained CITE-ODE conditional ECE (reference): 0.0034 (Table III)")
 
 if __name__ == "__main__":
     main()

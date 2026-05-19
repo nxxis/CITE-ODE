@@ -1,3 +1,12 @@
+"""Train a GRU baseline for a single random seed.
+
+This script is intended to be invoked by the multi-seed launcher
+(`scripts/run_multiseed_gru.py`) or run directly for a single-seed
+experiment. It reads `--seed` and `--output` arguments, trains for a
+fixed number of epochs, and writes a PyTorch checkpoint to the provided
+output path.
+"""
+
 import os, random, numpy as np
 import argparse
 import torch
@@ -31,6 +40,13 @@ def main():
     parser.add_argument('--seed', type=int, required=True)
     parser.add_argument('--output', type=str, required=True)
     args = parser.parse_args()
+
+    """Train a single GRU model using the provided seed and save a checkpoint.
+
+    The function sets determinisitic seeds for reproducibility, constructs a
+    small GRU classifier, runs a fixed training loop and writes the final
+    weights to `args.output`.
+    """
 
     seed_everything(args.seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

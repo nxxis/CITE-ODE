@@ -55,7 +55,7 @@ def main():
     os.makedirs("plots", exist_ok=True)
     plt.savefig('plots/figure3_selective.pdf', dpi=300)
     plt.savefig('plots/figure3_selective.png', dpi=300)
-    print("✅ Figure 3 saved: plots/figure3_selective.pdf")
+    print("Figure 3 saved: plots/figure3_selective.pdf")
 
 if __name__ == "__main__":
     main()

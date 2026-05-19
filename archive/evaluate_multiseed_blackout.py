@@ -44,13 +44,13 @@ def main():
     for seed in seeds:
         model_path = f"checkpoints/cemr_fair_seed{seed}.pth"
         if not os.path.exists(model_path):
-            print(f"Warning: {model_path} not found, skipping seed {seed}")
+            print(f"Warning: model not found at {model_path}; skipping seed {seed}.")
             continue
         metrics = evaluate_blackout_one_model(model_path, device, loader)
         results['auroc'].append(metrics['auroc'])
         results['ece'].append(metrics['ece'])
-        print(f"Seed {seed}: AUROC={metrics['auroc']:.4f}, ECE={metrics['ece']:.4f}")
-    print("\n===== Blackout Multi‑Seed Results =====")
+        print(f"Seed {seed} results: AUROC={metrics['auroc']:.4f}, ECE={metrics['ece']:.4f}")
+    print("\nBlackout multi-seed results:")
     print(f"AUROC: {np.mean(results['auroc']):.4f} ± {np.std(results['auroc']):.4f}")
     print(f"ECE:   {np.mean(results['ece']):.4f} ± {np.std(results['ece']):.4f}")
 

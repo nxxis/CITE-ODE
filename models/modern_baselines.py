@@ -49,4 +49,4 @@ try:
             idx_last = torch.clamp(mask.sum(1).long() - 1, min=0) if mask is not None else -1
             return self.classifier(h[torch.arange(h.size(0)), idx_last])
 except ImportError:
-    print("Mamba-SSM not installed. MambaICUModel will be unavailable.")
+    print("Optional dependency 'mamba_ssm' not found; MambaICUModel disabled.")

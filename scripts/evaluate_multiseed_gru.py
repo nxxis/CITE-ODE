@@ -1,3 +1,9 @@
+"""Evaluate GRU baseline checkpoints across multiple random seeds.
+
+Loads GRU checkpoints from `checkpoints/baseline_gru_seed{seed}.pth`, runs them
+on the canonical dataloader and reports AUROC, ECE, and Brier score aggregates.
+"""
+
 import os, numpy as np
 import torch
 from sklearn.model_selection import train_test_split
@@ -30,6 +36,8 @@ def evaluate_gru_one_model(model_path, device, loader):
     }
 
 def main():
+    """Evaluate saved GRU checkpoints and print mean ± std across seeds."""
+
     seeds = [42, 123, 456]
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     loader = get_mimic_dataloader()
