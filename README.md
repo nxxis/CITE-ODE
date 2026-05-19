@@ -172,14 +172,14 @@ https://drive.google.com/drive/u/2/folders/1oupz5CcQIMn-16I8KFWeqlpirY0vBCxg
 
 Quick download instructions (two options):
 
-1) Use the included Python helper (recommended):
+1. Use the included Python helper (recommended):
 
 ```bash
 pip install gdown
 python scripts/fetch_cohort.py
 ```
 
-2) Directly download the Drive folder with `gdown` (requires `gdown` supporting folder downloads):
+2. Directly download the Drive folder with `gdown` (requires `gdown` supporting folder downloads):
 
 ```bash
 # download the entire folder into `data/`
