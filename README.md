@@ -67,17 +67,7 @@ Key package versions used in the paper
 - Seaborn: `0.13.2`
 - Google Cloud BigQuery: `3.41.0`
 
-Use Conda or Colab instead of local virtualenvs on Windows when possible (recommended for users). The Conda and Colab instructions below provide the tested installation flow and exact wheel commands for PyTorch.
-
-Conda (recommended on Windows when wheels are problematic)
-
-```powershell
-conda create -n cite_env python=3.10 -y
-conda activate cite_env
-conda install pytorch torchvision torchaudio pytorch-cuda=12.8 -c pytorch -c nvidia -y
-python -m pip install --upgrade pip
-pip install -r requirements.txt --no-deps
-```
+Use Colab instead of local virtualenvs on Windows when possible (recommended for users). The Colab instructions below provide the tested installation flow and exact wheel commands for PyTorch.
 
 Quick verification
 
