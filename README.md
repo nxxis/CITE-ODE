@@ -46,50 +46,99 @@ The repository is fully reproducible and follows the Machine Learning Reproducib
 
 ---
 
-# ⚙️ Environment Setup
+# ⚙️ Reproducibility & Environment
 
-## 1. Clone Repository
+The experiments reported in this repository were executed under a tightly controlled environment to ensure reproducibility. We recommend reproducing the environment exactly when preparing artifacts for review.
 
-```bash
-git clone https://github.com/nxxis/CITE-ODE.git
-cd CITE-ODE
-```
+Supported runtime
 
-## 2. Create Virtual Environment
+- Python: 3.10 (recommended)
 
-### Using `venv`
+Key package versions used in the paper
 
-```bash
-python3 -m venv cite_env
-source cite_env/bin/activate
-```
+- PyTorch: `2.10.0+cu128` (CUDA 12.8 build)
+- torchdiffeq: `0.2.5`
+- NumPy: `2.0.2`
+- Pandas: `2.2.2`
+- Scikit-learn: `1.6.1`
+- Matplotlib: `3.10.0`
+- Seaborn: `0.13.2`
+- Google Cloud BigQuery: `3.41.0`
 
-### Using Conda
+Use Conda or Colab instead of local virtualenvs on Windows when possible (recommended for reviewers). The Conda and Colab instructions below provide the tested installation flow and exact wheel commands for PyTorch.
 
-```bash
+Conda (recommended on Windows when wheels are problematic)
+
+```powershell
 conda create -n cite_env python=3.10 -y
 conda activate cite_env
+conda install pytorch torchvision torchaudio pytorch-cuda=12.8 -c pytorch -c nvidia -y
+python -m pip install --upgrade pip
+pip install -r requirements.txt --no-deps
 ```
 
-## 3. Install Dependencies
+Quick verification
 
 ```bash
-pip install --upgrade pip
-pip install -r requirements.txt
+python -c "import torch,numpy,pandas; print('torch',torch.__version__,'numpy',numpy.__version__,'pandas',pandas.__version__)"
 ```
 
-### Frozen Dependency Versions
+Colab
 
-```text
-matplotlib==3.10.0
-numpy==2.0.2
-scikit-learn==1.6.1
-seaborn==0.13.2
-torch==2.10.0+cu128
-torchdiffeq==0.2.5
+The codebase is compatible with Google Colab; prefer installing the exact PyTorch wheel that matches the session CUDA runtime, then `pip install -r requirements.txt --no-deps`. After setup, run one of the scripts in `scripts/` to validate the environment.
+
+Colab editing tip
+
+When iterating on notebooks in Colab you can write Python modules or scripts directly into the repository area using `%%writefile` at the top of a notebook cell. Example:
+
+```python
+%%writefile scripts/generate_all_figures.py
+# (paste or export the file contents here)
 ```
 
-> **Note:** `+cu128` indicates CUDA 12.8 compatibility.
+This mirrors the author's workflow: edit code in Colab, save to Drive, and run the project's scripts from the mounted Drive copy.
+
+**Reviewer-friendly: Upload to Google Drive and run in Colab**
+
+If reviewers prefer a frictionless, reproducible flow (the workflow the author used), download the repository ZIP and upload it to your Google Drive, then run everything from a Colab session mounted to Drive. This avoids local wheel/build issues on some Windows/Python combinations.
+
+Steps (reviewer):
+
+1. Download the repository (use the GitHub "Download ZIP" button or `git clone`) and upload the ZIP to your Google Drive.
+
+2. In a Colab notebook, mount Google Drive and extract the archive:
+
+```python
+from google.colab import drive
+drive.mount('/content/drive')
+```
+
+```bash
+!unzip /content/drive/MyDrive/CEMR-Fair.zip -d /content/drive/MyDrive/
+%cd /content/drive/MyDrive/CEMR-Fair
+```
+
+3. Install the matching PyTorch wheel for the Colab CUDA runtime, then the remaining requirements:
+
+```bash
+!pip install --extra-index-url https://download.pytorch.org/whl/cu128 torch==2.10.0+cu128 torchvision torchaudio
+!pip install -r requirements.txt --no-deps
+```
+
+4. Optionally save the environment lock:
+
+```bash
+!pip freeze > requirements_lock_colab.txt
+```
+
+Notes:
+
+- Replace `cu128` with the CUDA version available in the Colab runtime if needed.
+- This Drive+Colab flow mirrors the author's reproducible workflow and avoids local binary build failures.
+
+Quick reviewer flow (one-line)
+
+Upload the repository folder (not a ZIP) to Google Drive, or clone the repository directly from GitHub in Colab → open Google Colab and mount Drive → change directory into the project folder on Drive (or the cloned folder) → install the matching PyTorch wheel and `requirements.txt` → run `smoke_test.py` or the scripts in `scripts/` to reproduce results. See [COLAB_SETUP.md](COLAB_SETUP.md) for the exact commands to copy-paste.
 
 ---
 

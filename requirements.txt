@@ -1,0 +1,9 @@
+matplotlib==3.10.0
+numpy==2.0.2
+pandas==2.2.2
+scikit-learn==1.6.1
+seaborn==0.13.2
+torch==2.10.0+cu128
+torchdiffeq==0.2.5
+google-cloud-bigquery==3.41.0
+gdown==5.2.0
