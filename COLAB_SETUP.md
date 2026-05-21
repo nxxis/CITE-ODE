@@ -1,59 +1,179 @@
-# Google Colab quick setup
+# Google Colab Quick Setup
 
-Use this snippet in a Colab notebook cell to prepare the runtime, install the exact PyTorch wheel that matches the session CUDA, then install the remaining requirements and run a quick verification.
+Use this guide inside a Google Colab notebook to prepare the runtime, install the correct PyTorch build for the active CUDA environment, and execute training or evaluation scripts for **CITE-ODE**.
+
+---
+
+# 1. Clone or Upload the Repository
+
+## Option A — Upload to Google Drive (Recommended)
+
+Upload the repository folder directly into your Google Drive and mount Drive inside Colab.
+
+## Option B — Clone Directly in Colab
 
 ```bash
-# Get the repository into Colab / Drive
-# Option A — upload the project folder (preferred):
-#   Upload the repository folder (not a ZIP) directly into your Google Drive and then mount Drive in Colab (see README).
-# Option B — clone in Colab:
 git clone https://github.com/nxxis/CITE-ODE.git
 cd CITE-ODE
+```
 
-# Install PyTorch wheel matching the Colab CUDA (example: cu128). If unsure, visit https://pytorch.org/get-started/locally/ to generate the right command.
+---
+
+# 2. Install PyTorch Matching the Colab CUDA Runtime
+
+Example for CUDA 12.8 (`cu128`):
+
+```bash
 pip install --extra-index-url https://download.pytorch.org/whl/cu128 torch==2.10.0+cu128 torchvision torchaudio
+```
 
-# Install the rest of the requirements without overwriting torch
+If unsure which CUDA version your Colab runtime uses, generate the correct install command from:
+
+```text
+https://pytorch.org/get-started/locally/
+```
+
+---
+
+# 3. Install Remaining Requirements
+
+Install the remaining dependencies without overwriting the PyTorch installation:
+
+```bash
 pip install -r requirements.txt --no-deps
+```
 
-# Optional quick verification
+---
+
+# 4. Optional Environment Verification
+
+```bash
 python -c "import torch,numpy,pandas; print('OK', torch.__version__, numpy.__version__, pandas.__version__)"
+```
 
-# Optional: save Colab environment for exact reproduction
+Expected output format:
+
+```text
+OK 2.10.0+cu128 2.0.2 2.2.2
+```
+
+---
+
+# 5. Optional Exact Environment Snapshot
+
+To save the full Colab environment for reproducibility:
+
+```bash
 pip freeze > requirements_lock_colab.txt
 ```
 
-Notes
+---
 
-- Replace `cu128` with the CUDA version used by the Colab runtime if necessary.
-- If using a CPU-only session, install the CPU PyTorch wheel instead (see the PyTorch site).
+# Notes
 
-Quick run (mount + execute)
+- Replace `cu128` with the CUDA version used by your Colab runtime if necessary.
+- For CPU-only sessions, install the CPU PyTorch wheel instead.
+- Always run commands from the repository root directory.
 
-In a Colab notebook cell, run the following sequence to mount Drive, change into the project folder, and execute the run:
+---
+
+# Quick Run Workflow (Mount + Execute)
+
+## Mount Google Drive
+
+Run the following inside a Colab notebook cell:
 
 ```python
 from google.colab import drive
 drive.mount('/content/drive')
 ```
 
+---
+
+## Change Into the Repository Folder
+
 ```bash
-%cd /content/drive/MyDrive/CITE-ODE   # adjust path if your folder name differs
-# To train models from scratch (5 seeds for CITE-ODE, 3 seeds for GRU):
-# Train CITE-ODE (5 seeds)
+%cd /content/drive/MyDrive/CITE-ODE
+```
+
+Adjust the path if your Drive folder name differs.
+
+---
+
+# Training Commands
+
+## Train CITE-ODE (5 Seeds)
+
+```bash
 python scripts/run_multiseed_train.py
+```
 
-# Train GRU baseline (3 seeds)
-python scripts/run_multiseed_gru.py
+## Train GRU Baseline (5 Seeds)
 
-# To evaluate pre-trained models and reproduce paper results:
+```bash
+python scripts/run_multiseed_gru_5.py
+```
+
+## Train Transformer Baseline (5 Seeds)
+
+```bash
+python scripts/run_multiseed_transformer_5.py
+```
+
+---
+
+# Evaluation Commands
+
+## Evaluate CITE-ODE
+
+```bash
 python scripts/evaluate_multiseed.py
-python scripts/evaluate_multiseed_gru.py
-python scripts/evaluate_multiseed_gru_blackout.py
-python scripts/evaluate_selective_multiseed_full.py
+```
 
-# Generate paper figures
+## Evaluate GRU Baseline
+
+```bash
+python scripts/evaluate_multiseed_gru_5.py
+```
+
+## Evaluate Transformer Baseline
+
+```bash
+python scripts/evaluate_multiseed_transformer_5.py
+```
+
+## Run Selective Prediction Evaluation
+
+```bash
+python scripts/evaluate_selective_multiseed_full.py
+```
+
+---
+
+# Generate Publication Figures
+
+```bash
 python scripts/generate_all_figures.py
 ```
 
-Note: If the repository uses different script names, run the equivalent scripts under `scripts/` (for example `scripts/run_multiseed_train.py` and `scripts/evaluate_multiseed.py`).
+Generated outputs include:
+
+- Reliability diagrams
+- Selective prediction variance plots
+- Subgroup calibration scatter plots
+
+---
+
+# Important Reminder
+
+All executable scripts are located under:
+
+```text
+scripts/
+```
+
+Ensure all commands are executed from the repository root:
+
+```text
+CITE-ODE/
+```

@@ -2,8 +2,6 @@
 
 Official PyTorch implementation of **CITE-ODE**, a continuous-time evidential learning framework for uncertainty-aware ICU risk prediction from irregularly sampled clinical telemetry.
 
-Designed for submission to the **IEEE International Conference on Data Mining (ICDM 2026)**.
-
 ---
 
 # Framework Overview
@@ -12,25 +10,34 @@ ICU telemetry data is sparse, irregularly sampled, and frequently interrupted by
 
 **CITE-ODE** addresses these limitations through three integrated components:
 
+---
+
 ## 1. Continuous-Time Trajectory Modeling
 
-A Neural Ordinary Differential Equation (Neural ODE) backbone models physiological trajectories continuously in time, directly handling irregular sampling without imputation.
+A Neural Ordinary Differential Equation (**Neural ODE**) backbone models physiological trajectories continuously in time, directly handling irregular sampling without imputation.
+
+---
 
 ## 2. Evidential Representation Learning
 
-Latent trajectories are projected through a Normal-Inverse-Gamma (NIG) evidential head that estimates predictive uncertainty in a single forward pass.
+Latent trajectories are projected through a **Normal-Inverse-Gamma (NIG)** evidential head that estimates predictive uncertainty in a single forward pass.
 
-Epistemic uncertainty is computed as (KaTeX/LaTeX):
+Epistemic uncertainty is computed as:
 
 $$
 u = \frac{\beta}{\alpha - 1}
 $$
 
-In plain symbols: u = β / (α − 1)
+---
 
 ## 3. Selective Prediction Framework
 
-Predictions are ranked using epistemic uncertainty and selectively filtered at predefined coverage levels (100%, 90%, 80%, 70%).
+Predictions are ranked using epistemic uncertainty and selectively filtered at predefined coverage levels:
+
+- 100%
+- 90%
+- 80%
+- 70%
 
 A stratified random control preserving class prevalence isolates the effect of uncertainty ranking from prevalence-induced calibration changes.
 
@@ -40,7 +47,9 @@ A stratified random control preserving class prevalence isolates the effect of u
 
 The repository is fully reproducible and follows the Machine Learning Reproducibility Checklist.
 
-## Prerequisites
+---
+
+# Prerequisites
 
 - Python 3.10+
 - CUDA-enabled NVIDIA GPU (T4, A100, RTX series recommended)
@@ -50,110 +59,51 @@ The repository is fully reproducible and follows the Machine Learning Reproducib
 
 # Reproducibility & Environment
 
-The experiments reported in this repository were executed under a tightly controlled environment to ensure reproducibility. We recommend reproducing the environment exactly when preparing artifacts for review.
+All experiments were executed under a tightly controlled environment to ensure reproducibility. We recommend reproducing the environment exactly.
 
-Supported runtime
+## Supported Runtime
 
-- Python: 3.10 (recommended)
+- Python: `3.10` (recommended)
 
-Key package versions used in the paper
+## Key Package Versions
 
-- PyTorch: `2.10.0+cu128` (CUDA 12.8 build)
-- torchdiffeq: `0.2.5`
-- NumPy: `2.0.2`
-- Pandas: `2.2.2`
-- Scikit-learn: `1.6.1`
-- Matplotlib: `3.10.0`
-- Seaborn: `0.13.2`
-- Google Cloud BigQuery: `3.41.0`
+| Package | Version |
+|---|---|
+| PyTorch | `2.10.0+cu128` |
+| torchdiffeq | `0.2.5` |
+| NumPy | `2.0.2` |
+| Pandas | `2.2.2` |
+| Scikit-learn | `1.6.1` |
+| Matplotlib | `3.10.0` |
+| Seaborn | `0.13.2` |
+| Google Cloud BigQuery | `3.41.0` |
 
-Use Colab instead of local virtualenvs on Windows when possible (recommended for users). The Colab instructions below provide the tested installation flow and exact wheel commands for PyTorch.
-
-Quick verification
+## Quick Verification
 
 ```bash
 python -c "import torch,numpy,pandas; print('torch',torch.__version__,'numpy',numpy.__version__,'pandas',pandas.__version__)"
 ```
 
-Colab
+---
 
-The codebase is compatible with Google Colab; prefer installing the exact PyTorch wheel that matches the session CUDA runtime, then `pip install -r requirements.txt --no-deps`. After setup, run one of the scripts in `scripts/` to validate the environment.
+# Google Colab Quick Setup
 
-Colab editing tip
+The codebase is compatible with Google Colab.
 
-When iterating on notebooks in Colab you can write Python modules or scripts directly into the repository area using `%%writefile` at the top of a notebook cell. Example:
+## Recommended Workflow
 
-```python
-%%writefile scripts/generate_all_figures.py
-# (paste or export the file contents here)
+1. Upload or clone the repository into Google Drive
+2. Open a Colab notebook
+3. Mount Google Drive
+4. Change into the project directory
+5. Install the required dependencies
+6. Run training or evaluation scripts
+
+A detailed walkthrough is provided in:
+
+```text
+COLAB_SETUP.md
 ```
-
-This mirrors the author's workflow: edit code in Colab, save to Drive, and run the project's scripts from the mounted Drive copy.
-
-**User-friendly: Upload to Google Drive and run in Colab**
-
-If users prefer a frictionless, reproducible flow (the workflow the author used), upload the repository folder (not a ZIP) to Google Drive, or clone the repository directly in Colab, then run everything from a Colab session mounted to Drive. This avoids local wheel/build issues on some Windows/Python combinations.
-
-Steps (users):
-
-1. Upload the repository folder (preferred) to your Google Drive, or in Colab run `git clone https://github.com/nxxis/CITE-ODE.git` to clone directly.
-
-2. In a Colab notebook, mount Google Drive:
-
-```python
-from google.colab import drive
-drive.mount('/content/drive')
-```
-
-If you uploaded the folder to Drive, change directory into the uploaded project folder on Drive. If you cloned in Colab, `cd` into the cloned repo root.
-
-```bash
-# Example (adjust the folder name if different):
-%cd /content/drive/MyDrive/CITE-ODE
-```
-
-3. Install the matching PyTorch wheel for the Colab CUDA runtime, then the remaining requirements:
-
-```bash
-!pip install --extra-index-url https://download.pytorch.org/whl/cu128 torch==2.10.0+cu128 torchvision torchaudio
-!pip install -r requirements.txt --no-deps
-```
-
-4. Optionally save the environment lock:
-
-```bash
-!pip freeze > requirements_lock_colab.txt
-```
-
-Notes:
-
-- Replace `cu128` with the CUDA version available in the Colab runtime if needed.
-- This Drive+Colab flow mirrors the author's reproducible workflow and avoids local binary build failures.
-
-Quick user flow (one-line)
-
-Upload the repository folder (not a ZIP) to Google Drive, or clone the repository directly from GitHub in Colab → open Google Colab and mount Drive → change directory into the project folder on Drive (or the cloned folder) → install the matching PyTorch wheel and `requirements.txt` → run the multi-seed scripts in `scripts/` to reproduce results. See [COLAB_SETUP.md](COLAB_SETUP.md) for the exact commands to copy-paste.
-
-Quick run (mount + execute)
-
-In Colab run:
-
-```python
-from google.colab import drive
-drive.mount('/content/drive')
-```
-
-```bash
-%cd /content/drive/MyDrive/CITE-ODE
-# To evaluate pre-trained models and reproduce paper results:
-python scripts/evaluate_multiseed.py
-python scripts/evaluate_multiseed_gru.py
-python scripts/evaluate_multiseed_gru_blackout.py
-python scripts/evaluate_selective_multiseed_full.py
-python scripts/generate_all_figures.py
-```
-
-If the project uses different filenames, run the equivalent scripts in `scripts/` (for example `scripts/run_multiseed_train.py` and `scripts/evaluate_multiseed.py`).
 
 ---
 
@@ -170,7 +120,13 @@ CITE-ODE/
 │   ├── baseline_gru_seed42.pth
 │   ├── baseline_gru_seed123.pth
 │   ├── baseline_gru_seed456.pth
-│   └── baseline_grud.pth
+│   ├── baseline_gru_seed789.pth
+│   ├── baseline_gru_seed101112.pth
+│   ├── transformer_seed42.pth
+│   ├── transformer_seed123.pth
+│   ├── transformer_seed456.pth
+│   ├── transformer_seed789.pth
+│   └── transformer_seed101112.pth
 │
 ├── data/
 │   ├── clinical_mimic.py
@@ -186,11 +142,14 @@ CITE-ODE/
 │   ├── train_cemr_seed.py
 │   ├── run_multiseed_train.py
 │   ├── train_gru_seed.py
-│   ├── run_multiseed_gru.py
+│   ├── run_multiseed_gru_5.py
+│   ├── train_transformer_seed.py
+│   ├── run_multiseed_transformer_5.py
 │   ├── evaluate_multiseed.py
-│   ├── evaluate_multiseed_gru.py
-│   ├── evaluate_multiseed_gru_blackout.py
+│   ├── evaluate_multiseed_gru_5.py
+│   ├── evaluate_multiseed_transformer_5.py
 │   ├── evaluate_selective_multiseed_full.py
+│   ├── evaluate_multiseed_subgroups.py
 │   └── generate_all_figures.py
 │
 ├── plots/
@@ -200,6 +159,7 @@ CITE-ODE/
 │
 ├── archive/
 ├── README.md
+├── COLAB_SETUP.md
 └── requirements.txt
 ```
 
@@ -207,50 +167,42 @@ CITE-ODE/
 
 # Dataset & Cohort Information
 
-To support peer-review reproducibility without requiring live database access, the evaluation cohort is stored as an external artifact rather than in Git history.
+To support reproducibility without requiring live database access, the evaluation cohort is stored as an external artifact.
 
 ## Dataset Details
 
-- **Source Dataset:** MIMIC-IV Clinical Database
-- **Cohort Size:** 10,000 ICU stays
-- **Observation Window:** 24 hours
-- **Signals:** 8 vital signs
-- **Target:** Binary in-hospital mortality
+| Field | Value |
+|---|---|
+| Source Dataset | MIMIC-IV Clinical Database |
+| Cohort Size | 10,000 ICU stays |
+| Observation Window | 24 hours |
+| Signals | 8 vital signs |
+| Target | Binary in-hospital mortality |
 
-Download the cohort into the repository with:
+---
+
+# Downloading the Cohort
+
+## Recommended Method
 
 ```bash
 pip install gdown
 python scripts/fetch_cohort.py
 ```
 
-The script writes the file to:
+The dataset will be written to:
 
 ```text
 data/mimic_cemr_cohort.csv
 ```
 
-Google Drive source folder:
-
-https://drive.google.com/drive/u/2/folders/1oupz5CcQIMn-16I8KFWeqlpirY0vBCxg
-
-Quick download instructions (two options):
-
-1. Use the included Python helper (recommended):
+## Alternative Direct Download
 
 ```bash
-pip install gdown
-python scripts/fetch_cohort.py
-```
-
-2. Directly download the Drive folder with `gdown` (requires `gdown` supporting folder downloads):
-
-```bash
-# download the entire folder into `data/`
 gdown --folder "https://drive.google.com/drive/folders/1oupz5CcQIMn-16I8KFWeqlpirY0vBCxg" -O data/
 ```
 
-After downloading, verify the file exists:
+## Verify Download
 
 ```bash
 ls -lh data/mimic_cemr_cohort.csv
@@ -268,21 +220,27 @@ All experiments use:
 
 This ensures reproducibility across supported hardware.
 
-## Seeds
+---
 
-### CITE-ODE
+# Seeds
 
-- 42
-- 123
-- 456
-- 789
-- 101112
+## CITE-ODE
 
-### GRU Baseline
+```text
+42, 123, 456, 789, 101112
+```
 
-- 42
-- 123
-- 456
+## GRU Baseline
+
+```text
+42, 123, 456, 789, 101112
+```
+
+## Transformer Baseline
+
+```text
+42, 123, 456, 789, 101112
+```
 
 ---
 
@@ -300,16 +258,32 @@ Generated checkpoints:
 checkpoints/cemr_fair_seed*.pth
 ```
 
-## Train GRU Baseline (3 Seeds)
+---
+
+## Train GRU Baseline (5 Seeds)
 
 ```bash
-python scripts/run_multiseed_gru.py
+python scripts/run_multiseed_gru_5.py
 ```
 
 Generated checkpoints:
 
 ```text
 checkpoints/baseline_gru_seed*.pth
+```
+
+---
+
+## Train Transformer Baseline (5 Seeds)
+
+```bash
+python scripts/run_multiseed_transformer_5.py
+```
+
+Generated checkpoints:
+
+```text
+checkpoints/transformer_seed*.pth
 ```
 
 ---
@@ -322,17 +296,23 @@ checkpoints/baseline_gru_seed*.pth
 python scripts/evaluate_multiseed.py
 ```
 
+---
+
 ## Global Metrics — GRU
 
 ```bash
-python scripts/evaluate_multiseed_gru.py
+python scripts/evaluate_multiseed_gru_5.py
 ```
 
-## Blackout Evaluation — GRU
+---
+
+## Global Metrics — Transformer
 
 ```bash
-python scripts/evaluate_multiseed_gru_blackout.py
+python scripts/evaluate_multiseed_transformer_5.py
 ```
+
+---
 
 ## Selective Prediction Sweep — CITE-ODE
 
@@ -357,11 +337,11 @@ python scripts/generate_all_figures.py
 
 Generated figures:
 
-| File                             | Description                                         |
-| -------------------------------- | --------------------------------------------------- |
-| `figure1_reliability.pdf`        | Reliability diagram under 6-hour telemetry blackout |
-| `figure2_selective_variance.pdf` | ECE vs coverage with 1σ variance bands              |
-| `figure3_subgroup_scatter.pdf`   | Subgroup AUROC vs ECE scatter plot                  |
+| File | Description |
+|---|---|
+| `figure1_reliability.pdf` | Reliability diagram under 6-hour telemetry blackout |
+| `figure2_selective_variance.pdf` | ECE vs coverage with 1σ variance bands |
+| `figure3_subgroup_scatter.pdf` | Subgroup AUROC vs ECE scatter plot |
 
 Figures are exported as:
 
@@ -372,16 +352,16 @@ Figures are exported as:
 
 # Experimental Results
 
-| Metric                  | CITE-ODE (5 seeds)  | GRU (3 seeds)     |
-| ----------------------- | ------------------- | ----------------- |
-| Global AUROC            | 0.797 ± 0.016       | **0.853 ± 0.011** |
-| Global ECE              | 0.019 ± 0.007       | 0.018 ± 0.005     |
-| Blackout AUROC          | 0.807 ± 0.013       | **0.836 ± 0.013** |
-| Blackout ECE            | 0.018 ± 0.010       | 0.016 ± 0.004     |
-| Selective ECE @80%      | **0.0085 ± 0.0074** | N/A               |
-| Stratified Control @80% | 0.0195 ± 0.0106     | N/A               |
+| Metric | CITE-ODE (5 seeds) | GRU (5 seeds) | Transformer (5 seeds) |
+|---|---|---|---|
+| Global AUROC | `0.797 ± 0.016` | `0.853 ± 0.009` | `0.873 ± 0.015` |
+| Global ECE | `0.019 ± 0.007` | `0.017 ± 0.005` | `0.022 ± 0.005` |
+| Blackout AUROC | `0.807 ± 0.013` | `0.836 ± 0.013` | `—` |
+| Blackout ECE | `0.018 ± 0.010` | `0.016 ± 0.004` | `—` |
+| Selective ECE @80% | `0.0085 ± 0.0074` | `N/A` | `N/A` |
+| Stratified Control @80% | `0.0195 ± 0.0106` | `N/A` | `N/A` |
 
-> Selective prediction improvement is consistent across all five CITE-ODE seeds with no seed-level reversal.
+Selective prediction improvement is consistent across all five CITE-ODE seeds with no seed-level reversal.
 
 ---
 
@@ -389,7 +369,7 @@ Figures are exported as:
 
 - Uncertainty-guided filtering reduces conditional calibration error by more than 50% at 80% coverage.
 - Stratified random controls preserving prevalence do not exhibit equivalent calibration improvements.
-- Learned epistemic uncertainty is therefore informative for calibration-aware filtering.
+- Learned epistemic uncertainty is informative for calibration-aware filtering.
 - CITE-ODE intentionally trades some discriminative performance (AUROC) for improved uncertainty reliability under structured missingness.
 - Subgroup variability correlates primarily with sample size, with no persistent directional bias observed.
 
@@ -423,7 +403,3 @@ pending
 # Contact
 
 For questions, issues, or reproducibility concerns, please open a GitHub issue.
-
----
-
-**Last Updated:** May 2026
