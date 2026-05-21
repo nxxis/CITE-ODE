@@ -1,3 +1,9 @@
+import sys
+import os
+
+# Add the archive directory to Python's path so imports work
+sys.path.insert(0, os.path.join(os.getcwd(), 'archive'))
+
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
@@ -7,8 +13,8 @@ from models.tide_ode import CEMREvidentialODE
 from run_baseline_gru import GRUBaselineNet
 from run_baseline_grud import GRUDBaselineNet
 from evaluate_blackout_stress import apply_contiguous_blackout
+from utils.metrics import calculate_ece
 import os
-
 os.makedirs("plots", exist_ok=True)
 
 # ------------------------------
@@ -56,7 +62,6 @@ def generate_figure1():
     gru_frac, gru_pred = calibration_curve(gru_y, gru_probs, n_bins=n_bins, strategy='uniform')
     grud_frac, grud_pred = calibration_curve(grud_y, grud_probs, n_bins=n_bins, strategy='uniform')
 
-    # Multi‑seed blackout ECE values (from your final runs)
     cite_ece = 0.018
     gru_ece = 0.016
     grud_ece = 0.014
@@ -82,7 +87,6 @@ def generate_figure1():
 # ------------------------------
 def generate_figure2():
     coverage = np.array([100, 90, 80, 70])
-    # From your multi‑seed sweep results
     cite_mean = np.array([0.0177, 0.0087, 0.0085, 0.0081])
     cite_std  = np.array([0.0074, 0.0064, 0.0074, 0.0054])
     ctrl_mean = np.array([0.0177, 0.0194, 0.0195, 0.0174])
@@ -116,56 +120,39 @@ def generate_figure2():
     print("Figure 2 saved (selective prediction with variance bands).")
 
 # ------------------------------
-# Figure 3: Subgroup Scatter Plot (Trade‑off between AUROC and ECE)
+# Figure 3: Subgroup Scatter Plot (Multi‑Seed, with error bars)
 # ------------------------------
 def generate_figure3():
     groups = ['Female', 'Male', 'White', 'Black', 'Hispanic', 'Asian']
-    n_counts = [900, 1100, 1300, 500, 240, 180]
-    auroc = [0.843, 0.822, 0.825, 0.848, 0.814, 0.875]
-    ece   = [0.024, 0.019, 0.017, 0.052, 0.031, 0.053]
+    n_counts = [862, 1134, 1312, 220, 76, 59]
+    auroc_mean = [0.805, 0.802, 0.793, 0.806, 0.793, 0.913]
+    auroc_std  = [0.027, 0.022, 0.024, 0.036, 0.024, 0.048]
+    ece_mean   = [0.024, 0.023, 0.021, 0.035, 0.035, 0.081]
+    ece_std    = [0.005, 0.005, 0.008, 0.003, 0.018, 0.025]
 
     plt.style.use('seaborn-v0_8-whitegrid')
     plt.rcParams.update({'font.size': 12, 'figure.dpi': 300, 'font.family': 'serif'})
-    
-    fig, ax = plt.subplots(figsize=(7, 5.5))
-    sizes = [n * 0.8 for n in n_counts]   # scale marker size by N
-    
-    scatter = ax.scatter(auroc, ece, s=sizes, color='#1b7a43', alpha=0.7, edgecolors='k', linewidth=1.5)
-    
+    fig, ax = plt.subplots(figsize=(7,5))
     for i, group in enumerate(groups):
-        ax.annotate(f"{group}\n(N={n_counts[i]})",
-                    (auroc[i], ece[i]),
-                    xytext=(10, -5), textcoords='offset points',
-                    fontsize=10, ha='left', va='center')
-    
-    ax.set_xlabel('Discriminative Performance (AUROC $\\rightarrow$)')
-    ax.set_ylabel('Calibration Error (ECE, $\\leftarrow$ lower is better)')
-    ax.set_title('Subgroup Performance Trade-offs (CITE-ODE)')
-    # Optional reference lines for "ideal" zone (high AUROC, low ECE)
-    ax.axhline(0.02, color='gray', linestyle='--', alpha=0.5)
-    ax.axvline(0.83, color='gray', linestyle='--', alpha=0.5)
+        ax.errorbar(auroc_mean[i], ece_mean[i],
+                    xerr=auroc_std[i], yerr=ece_std[i],
+                    fmt='o', capsize=5, capthick=1.5, elinewidth=1.5,
+                    label=f"{group} (N={n_counts[i]})")
+    ax.set_xlabel('AUROC')
+    ax.set_ylabel('ECE')
+    ax.set_title('Subgroup performance (5‑seed mean ± 1σ)')
+    ax.legend(loc='lower right')
+    ax.grid(True, linestyle=':', alpha=0.6)
     plt.tight_layout()
     plt.savefig('plots/figure3_subgroup_scatter.pdf', dpi=300)
     plt.savefig('plots/figure3_subgroup_scatter.png', dpi=300)
-    print("Figure 3 saved (subgroup scatter plot).")
+    print("Figure 3 saved (subgroup scatter with error bars).")
 
 # ------------------------------
 # Main
 # ------------------------------
 if __name__ == "__main__":
     generate_figure1()
-def main():
-    """Generate all manuscript figures and save to the `plots/` directory.
-
-    This utility bundles the plotting routines so that figures can be
-    reproduced deterministically from the evaluation outputs. Each helper
-    writes high-resolution figures suitable for inclusion in the paper.
-    """
-    # Generate the figures used in the manuscript and write to disk.
-    generate_figure1()
     generate_figure2()
     generate_figure3()
-    print("Figure 1 saved (reliability diagram).")
-    print("Figure 2 saved (selective prediction with variance bands).")
-    print("Figure 3 saved (subgroup scatter plot).")
     print("\nAll figures saved to 'plots/' directory.")
