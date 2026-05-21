@@ -1,4 +1,13 @@
-import os, numpy as np
+"""Compute subgroup performance and epistemic uncertainty under blackout.
+
+This script evaluates CEMR checkpoints across multiple seeds, applies a
+contiguous blackout stress to inputs, and reports subgroup AUROC, ECE,
+and mean epistemic uncertainty per demographic subgroup.
+Results are saved to `results/multiseed_subgroups.csv`.
+"""
+
+import os
+import numpy as np
 import torch
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score
@@ -6,10 +15,14 @@ from data.clinical_mimic import get_mimic_dataloader
 from models.tide_ode import CEMREvidentialODE
 from utils.metrics import calculate_ece
 
-# ------------------------------------------------------------
-# Blackout function (copied from evaluate_blackout_stress.py)
-# ------------------------------------------------------------
 def apply_contiguous_blackout(x, window_len=15):
+    """Zero a contiguous window in each input trajectory to simulate
+    telemetry blackout.
+
+    Args:
+        x: Tensor shaped (batch, seq_len, features)
+        window_len: Length of blackout window in timesteps
+    """
     x_stressed = x.clone()
     batch_size, seq_len, _ = x.shape
     start_idx = seq_len // 2 - window_len // 2
@@ -19,6 +32,10 @@ def apply_contiguous_blackout(x, window_len=15):
 
 # ------------------------------------------------------------
 def get_probs_unc_subgroups(model, device, loader):
+    """Collect probs, targets, epistemic uncertainty, and demographics.
+
+    Returns arrays: (probs, y_true, unc, gender, age, race)
+    """
     model.eval()
     all_probs, all_y, all_unc = [], [], []
     all_gender, all_age, all_race = [], [], []

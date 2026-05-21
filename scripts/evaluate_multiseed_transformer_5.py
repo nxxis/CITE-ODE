@@ -1,4 +1,11 @@
-import os, numpy as np
+"""Evaluate Transformer baseline checkpoints across five random seeds.
+
+This script mirrors the GRU multi-seed evaluators but loads the
+`TSTransformer` baseline checkpoints and reports mean ± std metrics.
+"""
+
+import os
+import numpy as np
 import torch
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score, average_precision_score, brier_score_loss

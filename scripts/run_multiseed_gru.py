@@ -7,14 +7,18 @@ reproducing baseline runs locally or in a Colab session.
 
 import subprocess
 import os
+import sys
 
 os.makedirs("checkpoints", exist_ok=True)
 
 # Use 3 seeds (enough to show variance, less costly)
 seeds = [42, 123, 456]
+script_dir = os.path.dirname(__file__)
+python = sys.executable
 for seed in seeds:
-    output_path = f"checkpoints/baseline_gru_seed{seed}.pth"
-    cmd = f"python train_gru_seed.py --seed {seed} --output {output_path}"
-    print(f"Running: {cmd}")
-    subprocess.run(cmd, shell=True, check=True)
+    output_path = os.path.join(script_dir, f"checkpoints/baseline_gru_seed{seed}.pth")
+    script_path = os.path.join(script_dir, "train_gru_seed.py")
+    cmd = [python, script_path, "--seed", str(seed), "--output", output_path]
+    print(f"Running: {' '.join(cmd)}")
+    subprocess.run(cmd, check=True)
     print(f"Finished GRU seed {seed}\n")

@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score, brier_score_loss
 from data.clinical_mimic import get_mimic_dataloader
 from utils.metrics import calculate_ece
-from train_gru_seed import GRUBaselineNet
+from scripts.train_gru_seed import GRUBaselineNet
 
 def evaluate_gru_one_model(model_path, device, loader):
     model = GRUBaselineNet(input_dim=4, hidden_dim=16).to(device)

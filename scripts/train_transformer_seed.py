@@ -1,4 +1,14 @@
-import os, random, argparse
+"""Train a single-seed Transformer baseline on the MIMIC-style cohort.
+
+This script trains the `TSTransformer` baseline for a single random seed
+and writes the resulting checkpoint to the requested output path. It is
+intended as a straightforward, reproducible training entrypoint used in
+baseline comparisons.
+"""
+
+import os
+import random
+import argparse
 import numpy as np
 import torch
 import torch.nn as nn
@@ -7,6 +17,7 @@ from data.clinical_mimic import get_mimic_dataloader
 from models.modern_baselines import TSTransformer
 
 def seed_everything(seed):
+    """Set RNG seeds for Python/NumPy/PyTorch for reproducibility."""
     os.environ['PYTHONHASHSEED'] = str(seed)
     random.seed(seed)
     np.random.seed(seed)

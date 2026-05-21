@@ -10,7 +10,7 @@ import torch
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score
 from data.clinical_mimic import get_mimic_dataloader
-from run_baseline_gru import GRUBaselineNet
+from scripts.run_baseline_gru import GRUBaselineNet
 from utils.metrics import calculate_ece
 
 def apply_contiguous_blackout(x, window_len=15):

@@ -1,4 +1,13 @@
-import os, numpy as np
+"""Compute selective-prediction ECE reductions across multiple seeds.
+
+For each seed this script loads a CEMR checkpoint, computes per-example
+epistemic uncertainty under a contiguous blackout, and evaluates the
+conditional ECE when retaining the lowest-uncertainty fraction. A
+stratified random control is computed for comparison.
+"""
+
+import os
+import numpy as np
 import torch
 from sklearn.model_selection import train_test_split, StratifiedShuffleSplit
 from data.clinical_mimic import get_mimic_dataloader

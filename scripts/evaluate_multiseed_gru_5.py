@@ -1,9 +1,17 @@
-import os, numpy as np
+"""Evaluate GRU baseline checkpoints across five random seeds.
+
+Loads GRU checkpoints following the `checkpoints/baseline_gru_seed{seed}.pth`
+pattern, runs each on the canonical dataloader, and prints aggregated
+metrics (AUROC, AUPRC, ECE, Brier) as mean ± std across seeds.
+"""
+
+import os
+import numpy as np
 import torch
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score, average_precision_score, brier_score_loss
 from data.clinical_mimic import get_mimic_dataloader
-from train_gru_seed import GRUBaselineNet
+from scripts.train_gru_seed import GRUBaselineNet
 from utils.metrics import calculate_ece
 
 def evaluate_one(model_path, device, loader):
