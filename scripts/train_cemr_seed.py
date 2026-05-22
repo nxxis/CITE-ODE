@@ -19,6 +19,9 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 from data.clinical_mimic import get_mimic_dataloader
 from models.tide_ode import CEMREvidentialODE
+import logging
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 
 def seed_everything(seed):
@@ -68,7 +71,7 @@ def main():
     # Training loop: alternating discriminator and model updates per batch.
     seed_everything(args.seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Training with seed {args.seed} on {device}")
+    logging.info("Training with seed %d on %s", args.seed, device)
 
     loader = get_mimic_dataloader()
     model = CEMREvidentialODE(latent_dim=16).to(device)
@@ -112,12 +115,17 @@ def main():
             (loss_nll + 5.0 * loss_task - 5.0 * loss_adv).backward()
             optimizer.step()
 
-        print(
-            f"Seed {args.seed} | Epoch {epoch+1:02d}/15 | NLL: {loss_nll.item():.4f} | Task: {loss_task.item():.4f} | Adv: {loss_d.item():.4f}"
+        logging.info(
+            "Seed %d | Epoch %02d/15 | NLL: %.4f | Task: %.4f | Adv: %.4f",
+            args.seed,
+            epoch + 1,
+            loss_nll.item(),
+            loss_task.item(),
+            loss_d.item(),
         )
 
     torch.save(model.state_dict(), args.output)
-    print(f"Saved checkpoint to {args.output}")
+    logging.info("Saved checkpoint to %s", args.output)
 
 
 if __name__ == "__main__":

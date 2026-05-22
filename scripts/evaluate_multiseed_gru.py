@@ -6,6 +6,7 @@ on the canonical dataloader and reports AUROC, ECE, and Brier score aggregates.
 
 import os, numpy as np
 import sys
+import logging
 import torch
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score, brier_score_loss
@@ -17,6 +18,8 @@ if PROJECT_ROOT not in sys.path:
 from data.clinical_mimic import get_mimic_dataloader
 from utils.metrics import calculate_ece
 from scripts.train_gru_seed import GRUBaselineNet
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 def evaluate_gru_one_model(model_path, device, loader):
     model = GRUBaselineNet(input_dim=4, hidden_dim=16).to(device)
@@ -51,19 +54,19 @@ def main():
     for seed in seeds:
         model_path = f"checkpoints/baseline_gru_seed{seed}.pth"
         if not os.path.exists(model_path):
-            print(f"Warning: {model_path} not found, skipping seed {seed}")
+            logging.warning("%s not found, skipping seed %s", model_path, seed)
             continue
         metrics = evaluate_gru_one_model(model_path, device, loader)
         for k, v in metrics.items():
             results[k].append(v)
-        print(f"GRU Seed {seed}: AUROC={metrics['auroc']:.4f}, ECE={metrics['ece']:.4f}")
+        logging.info("GRU Seed %s: AUROC=%.4f, ECE=%.4f", seed, metrics['auroc'], metrics['ece'])
     if not results['auroc']:
-        print("No models found.")
+        logging.warning("No models found.")
         return
-    print("\n===== GRU Multi‑Seed Results =====")
-    print(f"AUROC: {np.mean(results['auroc']):.4f} ± {np.std(results['auroc']):.4f}")
-    print(f"ECE:   {np.mean(results['ece']):.4f} ± {np.std(results['ece']):.4f}")
-    print(f"Brier: {np.mean(results['brier']):.4f} ± {np.std(results['brier']):.4f}")
+    logging.info("GRU Multi‑Seed Results")
+    logging.info("AUROC: %.4f ± %.4f", np.mean(results['auroc']), np.std(results['auroc']))
+    logging.info("ECE:   %.4f ± %.4f", np.mean(results['ece']), np.std(results['ece']))
+    logging.info("Brier: %.4f ± %.4f", np.mean(results['brier']), np.std(results['brier']))
 
 if __name__ == "__main__":
     main()

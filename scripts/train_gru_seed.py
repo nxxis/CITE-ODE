@@ -20,6 +20,9 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 from data.clinical_mimic import get_mimic_dataloader
+import logging
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 class GRUBaselineNet(nn.Module):
     """Small GRU encoder + linear classifier used as a baseline.
@@ -82,9 +85,9 @@ def main():
             loss.backward()
             optimizer.step()
             total_loss += loss.item()
-        print(f"Seed {args.seed} | Epoch {epoch+1}/15 | Loss: {total_loss/len(loader):.4f}")
+        logging.info("Seed %d | Epoch %d/15 | Loss: %.4f", args.seed, epoch+1, total_loss/len(loader))
     torch.save(model.state_dict(), args.output)
-    print(f"Saved {args.output}")
+    logging.info("Saved %s", args.output)
 
 if __name__ == "__main__":
     main()

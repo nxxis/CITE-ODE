@@ -7,6 +7,7 @@ This script mirrors the GRU multi-seed evaluators but loads the
 import os
 import numpy as np
 import sys
+import logging
 import torch
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score, average_precision_score, brier_score_loss
@@ -51,15 +52,19 @@ def main():
     for seed in seeds:
         model_path = f"checkpoints/transformer_seed{seed}.pth"
         if not os.path.exists(model_path):
-            print(f"Missing {model_path}, skipping seed {seed}")
+            logging.warning("Missing %s, skipping seed %s", model_path, seed)
             continue
         metrics = evaluate_one(model_path, device, loader)
         for k, v in metrics.items():
             results[k].append(v)
-        print(f"Transformer seed {seed}: AUROC={metrics['auroc']:.4f}, ECE={metrics['ece']:.4f}")
-    print("\nTRANSFORMER (5 seeds) mean ± std:")
+        logging.info("Transformer seed %s: AUROC=%.4f, ECE=%.4f", seed, metrics['auroc'], metrics['ece'])
+    logging.info("TRANSFORMER (5 seeds) mean ± std:")
     for k, vlist in results.items():
-        print(f"{k.upper()}: {np.mean(vlist):.4f} ± {np.std(vlist):.4f}")
+        logging.info("%s: %.4f ± %.4f", k.upper(), np.mean(vlist), np.std(vlist))
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+    main()
 
 if __name__ == "__main__":
     main()

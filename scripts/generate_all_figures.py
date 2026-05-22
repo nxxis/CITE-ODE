@@ -28,6 +28,9 @@ from scripts.run_baseline_gru import GRUBaselineNet
 from scripts.run_baseline_grud import GRUDBaselineNet
 from scripts.evaluate_blackout_stress import apply_contiguous_blackout
 from utils.metrics import calculate_ece
+import logging
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 os.makedirs("plots", exist_ok=True)
 
@@ -126,7 +129,7 @@ def generate_figure1():
     plt.tight_layout()
     plt.savefig("plots/figure1_reliability.pdf", dpi=300)
     plt.savefig("plots/figure1_reliability.png", dpi=300)
-    print("Figure 1 saved (reliability diagram).")
+    logging.info("Figure 1 saved (reliability diagram).")
 
 
 def generate_figure2():
@@ -162,7 +165,7 @@ def generate_figure2():
     plt.tight_layout()
     plt.savefig("plots/figure2_selective_variance.pdf", bbox_inches="tight")
     plt.savefig("plots/figure2_selective_variance.png", dpi=300)
-    print("Figure 2 saved (selective prediction with variance bands).")
+    logging.info("Figure 2 saved (selective prediction with variance bands).")
 
 
 def generate_figure3():
@@ -197,7 +200,7 @@ def generate_figure3():
     plt.tight_layout()
     plt.savefig("plots/figure3_subgroup_scatter.pdf", dpi=300)
     plt.savefig("plots/figure3_subgroup_scatter.png", dpi=300)
-    print("Figure 3 saved (subgroup scatter with error bars).")
+    logging.info("Figure 3 saved (subgroup scatter with error bars).")
 
 
 def generate_figure4():
@@ -234,7 +237,7 @@ def generate_figure4():
     plt.tight_layout()
     plt.savefig("plots/figure4_risk_coverage.pdf", bbox_inches="tight")
     plt.savefig("plots/figure4_risk_coverage.png", dpi=300)
-    print("Figure 4 saved (risk‑coverage curve).")
+    logging.info("Figure 4 saved (risk‑coverage curve).")
 
 
 def generate_figure5():
@@ -274,7 +277,7 @@ def generate_figure5():
     plt.tight_layout()
     plt.savefig('plots/figure5_uncertainty_trajectory.pdf', dpi=300)
     plt.savefig('plots/figure5_uncertainty_trajectory.png', dpi=300)
-    print("Figure 5 saved (uncertainty trajectory).")
+    logging.info("Figure 5 saved (uncertainty trajectory).")
 
 
 if __name__ == "__main__":
@@ -283,4 +286,4 @@ if __name__ == "__main__":
     generate_figure3()
     generate_figure4()
     generate_figure5()
-    print("\nAll five figures saved to 'plots/' directory.")
+    logging.info("All five figures saved to 'plots/' directory.")

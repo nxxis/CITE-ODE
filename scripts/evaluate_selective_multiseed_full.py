@@ -89,23 +89,25 @@ def main():
     for seed in seeds:
         model_path = f"checkpoints/cemr_fair_seed{seed}.pth"
         if not os.path.exists(model_path):
-            print(f"Warning: {model_path} not found, skipping seed {seed}")
+            import logging
+            logging.warning("%s not found, skipping seed %s", model_path, seed)
             continue
         for cov in coverages:
             cite_ece, control_ece = evaluate_selective_one_model(model_path, device, loader, cov)
             results['cite'][cov].append(cite_ece)
             results['control'][cov].append(control_ece)
-            print(f"Seed {seed}, cov={cov:.0%}: CITE ECE={cite_ece:.4f}, Control ECE={control_ece:.4f}")
+            logging.info("Seed %s, cov=%s: CITE ECE=%.4f, Control ECE=%.4f", seed, f"{int(cov*100)}%", cite_ece, control_ece)
 
     # Compute means and stds
-    print("\n===== Multi‑Seed Selective Prediction Results =====")
-    print("Coverage | CITE-ODE mean ± std | Control mean ± std")
+    import logging
+    logging.info("Multi‑Seed Selective Prediction Results")
+    logging.info("Coverage | CITE-ODE mean ± std | Control mean ± std")
     for cov in coverages:
         cite_mean = np.mean(results['cite'][cov])
         cite_std = np.std(results['cite'][cov])
         ctrl_mean = np.mean(results['control'][cov])
         ctrl_std = np.std(results['control'][cov])
-        print(f"{cov:.0%}       | {cite_mean:.4f} ± {cite_std:.4f} | {ctrl_mean:.4f} ± {ctrl_std:.4f}")
+        logging.info("%s       | %.4f ± %.4f | %.4f ± %.4f", f"{int(cov*100)}%", cite_mean, cite_std, ctrl_mean, ctrl_std)
 
 if __name__ == "__main__":
     main()

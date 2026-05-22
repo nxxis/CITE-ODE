@@ -23,6 +23,9 @@ if PROJECT_ROOT not in sys.path:
 
 from data.clinical_mimic import get_mimic_dataloader
 from utils.metrics import calculate_ece, run_bootstrap_audit
+import logging
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 def seed_everything(seed=42):
     os.environ['PYTHONHASHSEED'] = str(seed)
@@ -66,7 +69,7 @@ def main():
     optimizer = optim.Adam(model.parameters(), lr=1e-3)
     criterion = nn.BCEWithLogitsLoss()
 
-    print("Optimizing discrete GRU baseline on 10k longitudinal footprint...")
+    logging.info("Optimizing discrete GRU baseline on 10k longitudinal footprint...")
     for epoch in range(15):
         model.train()
         total_loss = 0.0
@@ -80,7 +83,7 @@ def main():
             optimizer.step()
             total_loss += loss.item()
 
-        print(f"Baseline Epoch [{epoch+1:02d}/15] | Supervised BCE Loss: {total_loss/len(loader):.4f}")
+        logging.info("Baseline Epoch [%02d/15] | Supervised BCE Loss: %.4f", epoch+1, total_loss/len(loader))
 
     model.eval()
     all_probs, all_y, all_d = [], [], []
@@ -105,16 +108,36 @@ def main():
 
     bounds = run_bootstrap_audit(y_te, y_prob_te, n_resamples=1000)
 
-    print("\n" + "=" * 85)
-    print("Discrete recurrent baseline audit (variant A: no ODE - 10k cohort)")
-    print("=" * 85)
-    print(f"Global predictive AUROC: {roc_auc_score(y_te, y_prob_te):.4f} | 95% CI: ({bounds['auroc_ci'][0]:.4f}, {bounds['auroc_ci'][1]:.4f})")
-    print(f"Global predictive AUPRC: {average_precision_score(y_te, y_prob_te):.4f} | 95% CI: ({bounds['auprc_ci'][0]:.4f}, {bounds['auprc_ci'][1]:.4f})")
-    print(f"Expected calibration error (ECE): {calculate_ece(y_te, y_prob_te):.4f} | 95% CI: ({bounds['ece_ci'][0]:.4f}, {bounds['ece_ci'][1]:.4f})")
-    print(f"Total clinical Brier score:  {brier_score_loss(y_te, y_prob_te):.4f} | 95% CI: ({bounds['brier_ci'][0]:.4f}, {bounds['brier_ci'][1]:.4f})")
+    logging.info("%s", "=" * 85)
+    logging.info("Discrete recurrent baseline audit (variant A: no ODE - 10k cohort)")
+    logging.info("%s", "=" * 85)
+    logging.info(
+        "Global predictive AUROC: %.4f | 95%% CI: (%.4f, %.4f)",
+        roc_auc_score(y_te, y_prob_te),
+        bounds["auroc_ci"][0],
+        bounds["auroc_ci"][1],
+    )
+    logging.info(
+        "Global predictive AUPRC: %.4f | 95%% CI: (%.4f, %.4f)",
+        average_precision_score(y_te, y_prob_te),
+        bounds["auprc_ci"][0],
+        bounds["auprc_ci"][1],
+    )
+    logging.info(
+        "Expected calibration error (ECE): %.4f | 95%% CI: (%.4f, %.4f)",
+        calculate_ece(y_te, y_prob_te),
+        bounds["ece_ci"][0],
+        bounds["ece_ci"][1],
+    )
+    logging.info(
+        "Total clinical Brier score:  %.4f | 95%% CI: (%.4f, %.4f)",
+        brier_score_loss(y_te, y_prob_te),
+        bounds["brier_ci"][0],
+        bounds["brier_ci"][1],
+    )
 
-    print("\nPost-hoc subgroup disparity matrix")
-    print("-" * 85)
+    logging.info("Post-hoc subgroup disparity matrix")
+    logging.info("%s", "-" * 85)
     groups = {
         "Female": d_te[:, 1] == 0,
         "Male": d_te[:, 1] == 1,
@@ -129,13 +152,13 @@ def main():
         if sum(mask_g) > 5 and len(np.unique(y_te[mask_g])) > 1:
             g_auc = roc_auc_score(y_te[mask_g], y_prob_te[mask_g])
             g_ece = calculate_ece(y_te[mask_g], y_prob_te[mask_g])
-            print(f"{name:<12} | AUROC: {g_auc:.4f} | ECE: {g_ece:.4f}")
+            logging.info("%s | AUROC: %.4f | ECE: %.4f", name, g_auc, g_ece)
         else:
-            print(f"{name:<12} | Insufficient data density.")
+            logging.info("%s | Insufficient data density.", name)
 
     os.makedirs("checkpoints", exist_ok=True)
     torch.save(model.state_dict(), "checkpoints/baseline_gru.pth")
-    print("\n10k GRU baseline weights saved to checkpoints/baseline_gru.pth")
+    logging.info("10k GRU baseline weights saved to checkpoints/baseline_gru.pth")
 
 
 if __name__ == "__main__":

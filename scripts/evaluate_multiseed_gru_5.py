@@ -49,18 +49,20 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     loader = get_mimic_dataloader()
     results = {k: [] for k in ['auroc','auprc','ece','brier']}
+    import logging
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     for seed in seeds:
         model_path = f"checkpoints/baseline_gru_seed{seed}.pth"
         if not os.path.exists(model_path):
-            print(f"Missing {model_path}, skipping seed {seed}")
+            logging.warning("Missing %s, skipping seed %s", model_path, seed)
             continue
         metrics = evaluate_one(model_path, device, loader)
         for k, v in metrics.items():
             results[k].append(v)
-        print(f"GRU seed {seed}: AUROC={metrics['auroc']:.4f}, ECE={metrics['ece']:.4f}")
-    print("\nGRU (5 seeds) mean ± std:")
+        logging.info("GRU seed %s: AUROC=%.4f, ECE=%.4f", seed, metrics['auroc'], metrics['ece'])
+    logging.info("GRU (5 seeds) mean ± std:")
     for k, vlist in results.items():
-        print(f"{k.upper()}: {np.mean(vlist):.4f} ± {np.std(vlist):.4f}")
+        logging.info("%s: %.4f ± %.4f", k.upper(), np.mean(vlist), np.std(vlist))
 
 if __name__ == "__main__":
     main()

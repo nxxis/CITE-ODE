@@ -9,6 +9,7 @@ The outputs are printed as mean ± std across evaluated seeds.
 
 import os, numpy as np
 import sys
+import logging
 import torch
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score, average_precision_score, brier_score_loss
@@ -20,6 +21,8 @@ if PROJECT_ROOT not in sys.path:
 from data.clinical_mimic import get_mimic_dataloader
 from models.tide_ode import CEMREvidentialODE
 from utils.metrics import calculate_ece
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 def evaluate_one_model(model_path, device, loader):
     model = CEMREvidentialODE(latent_dim=16).to(device)
@@ -64,17 +67,17 @@ def main():
     for seed in seeds:
         model_path = f"checkpoints/cemr_fair_seed{seed}.pth"
         if not os.path.exists(model_path):
-            print(f"Warning: model not found at {model_path}; skipping seed {seed}.")
+            logging.warning("model not found at %s; skipping seed %s.", model_path, seed)
             continue
         metrics = evaluate_one_model(model_path, device, loader)
         for k, v in metrics.items():
             results[k].append(v)
-        print(f"Seed {seed} results: AUROC={metrics['auroc']:.4f}, ECE={metrics['ece']:.4f}")
-    print("\nMulti-Seed aggregated results:")
+        logging.info("Seed %s results: AUROC=%.4f, ECE=%.4f", seed, metrics['auroc'], metrics['ece'])
+    logging.info("Multi-Seed aggregated results:")
     for k, vlist in results.items():
         mean_val = np.mean(vlist)
         std_val = np.std(vlist)
-        print(f"{k.upper()}: {mean_val:.4f} ± {std_val:.4f}")
+        logging.info("%s: %.4f ± %.4f", k.upper(), mean_val, std_val)
 
 if __name__ == "__main__":
     main()

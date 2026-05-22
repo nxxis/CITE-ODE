@@ -7,6 +7,7 @@ across seeds using AUROC and ECE.
 
 import os, numpy as np
 import sys
+import logging
 import torch
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score
@@ -18,6 +19,8 @@ if PROJECT_ROOT not in sys.path:
 from data.clinical_mimic import get_mimic_dataloader
 from scripts.run_baseline_gru import GRUBaselineNet
 from utils.metrics import calculate_ece
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 def apply_contiguous_blackout(x, window_len=15):
     """Return a copy of `x` with a contiguous window of features zeroed.
@@ -64,18 +67,18 @@ def main():
     for seed in seeds:
         model_path = f"checkpoints/baseline_gru_seed{seed}.pth"
         if not os.path.exists(model_path):
-            print(f"Warning: model not found at {model_path}; skipping seed {seed}.")
+            logging.warning("model not found at %s; skipping seed %s.", model_path, seed)
             continue
         metrics = evaluate_gru_blackout_one_model(model_path, device, loader)
         results['auroc'].append(metrics['auroc'])
         results['ece'].append(metrics['ece'])
-        print(f"GRU seed {seed} results: Blackout AUROC={metrics['auroc']:.4f}, ECE={metrics['ece']:.4f}")
+        logging.info("GRU seed %s results: Blackout AUROC=%.4f, ECE=%.4f", seed, metrics['auroc'], metrics['ece'])
     if not results['auroc']:
-        print("No models found. Exiting.")
+        logging.warning("No models found. Exiting.")
         return
-    print("\nGRU multi-seed blackout results:")
-    print(f"AUROC: {np.mean(results['auroc']):.4f} ± {np.std(results['auroc']):.4f}")
-    print(f"ECE:   {np.mean(results['ece']):.4f} ± {np.std(results['ece']):.4f}")
+    logging.info("GRU multi-seed blackout results:")
+    logging.info("AUROC: %.4f ± %.4f", np.mean(results['auroc']), np.std(results['auroc']))
+    logging.info("ECE:   %.4f ± %.4f", np.mean(results['ece']), np.std(results['ece']))
 
 if __name__ == "__main__":
     main()

@@ -10,16 +10,21 @@ expected file at `data/mimic_cemr_cohort.csv`.
 import argparse
 import os
 import sys
+import logging
+
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
+
+# Configure a simple logger for CLI feedback
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 
 def ensure_gdown():
     try:
         import gdown  # noqa: F401
     except Exception:
-        print("gdown is not installed. Install with: pip install gdown")
+        logging.error("gdown is not installed. Install with: pip install gdown")
         sys.exit(1)
 
 
@@ -39,20 +44,22 @@ def main():
     dest = os.path.expanduser(args.dest)
     os.makedirs(dest, exist_ok=True)
 
-    print(f"Downloading Drive folder {args.folder_url} into {dest} ...")
+    logging.info("Downloading Drive folder %s into %s ...", args.folder_url, dest)
     try:
         gdown.download_folder(args.folder_url, output=dest, quiet=False, use_cookies=False)
-    except Exception as e:
-        print("gdown failed to download the folder:", e)
-        print("You can also download manually from the Drive link and place the file at data/mimic_cemr_cohort.csv")
+    except Exception:
+        logging.exception("gdown failed to download the folder")
+        logging.error("You can also download manually from the Drive link and place the file at data/mimic_cemr_cohort.csv")
         sys.exit(1)
 
     expected = os.path.join(dest, "mimic_cemr_cohort.csv")
     if os.path.exists(expected):
-        print(f"Success: cohort downloaded to {expected}")
+        logging.info("Success: cohort downloaded to %s", expected)
     else:
-        print(f"Download finished, but the expected cohort file was not found: {expected}")
-        print("Verify the Drive folder contents and place the CSV in data/.")
+        logging.warning(
+            "Download finished, but the expected cohort file was not found: %s", expected
+        )
+        logging.info("Verify the Drive folder contents and place the CSV in data/.")
 
 
 if __name__ == "__main__":

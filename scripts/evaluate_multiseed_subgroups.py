@@ -108,13 +108,15 @@ def main():
     for seed in seeds:
         model_path = f"checkpoints/cemr_fair_seed{seed}.pth"
         if not os.path.exists(model_path):
-            print(f"Warning: {model_path} not found, skipping seed {seed}")
+            import logging
+            logging.warning("%s not found, skipping seed %s", model_path, seed)
             continue
         res = evaluate_one_seed(model_path, device, loader)
         for name in all_results:
             all_results[name].append(res[name])
-    print("\nMulti-seed subgroup results (mean ± std across seeds):")
-    print(f"{'Subgroup':<10} {'N (avg)':<10} {'AUROC':<14} {'ECE':<14} {'Epistemic Unc':<14}")
+    import logging
+    logging.info("Multi-seed subgroup results (mean ± std across seeds):")
+    logging.info("%s", f"{'Subgroup':<10} {'N (avg)':<10} {'AUROC':<14} {'ECE':<14} {'Epistemic Unc':<14}")
     for name in all_results:
         n_vals = [r["N"] for r in all_results[name] if not np.isnan(r["AUROC"])]
         au_vals = [r["AUROC"] for r in all_results[name] if not np.isnan(r["AUROC"])]
@@ -125,9 +127,16 @@ def main():
             ece_mean, ece_std = np.mean(ece_vals), np.std(ece_vals)
             unc_mean, unc_std = np.mean(unc_vals), np.std(unc_vals)
             n_mean = int(np.mean(n_vals))
-            print(f"{name:<10} {n_mean:<10} {au_mean:.3f}±{au_std:.3f}   {ece_mean:.3f}±{ece_std:.3f}   {unc_mean:.3f}±{unc_std:.3f}")
+            logging.info(
+                "%s %s %s %s %s",
+                f"{name:<10}",
+                f"{n_mean:<10}",
+                f"{au_mean:.3f}±{au_std:.3f}",
+                f"{ece_mean:.3f}±{ece_std:.3f}",
+                f"{unc_mean:.3f}±{unc_std:.3f}",
+            )
         else:
-            print(f"{name:<10} {'N/A':<10} N/A         N/A         N/A")
+            logging.info(f"{name:<10} {'N/A':<10} N/A         N/A         N/A")
     os.makedirs("results", exist_ok=True)
     with open("results/multiseed_subgroups.csv", "w") as f:
         f.write("Seed,Subgroup,AUROC,ECE,Unc,N\n")
@@ -136,7 +145,7 @@ def main():
                 r = all_results[name][i]
                 if not np.isnan(r["AUROC"]):
                     f.write(f"{seed},{name},{r['AUROC']:.4f},{r['ECE']:.4f},{r['Unc']:.4f},{r['N']}\n")
-    print("Per-seed results saved to results/multiseed_subgroups.csv")
+    logging.info("Per-seed results saved to results/multiseed_subgroups.csv")
 
 if __name__ == "__main__":
     main()

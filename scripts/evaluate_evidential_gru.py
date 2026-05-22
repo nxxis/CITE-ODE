@@ -1,4 +1,5 @@
 import os, sys
+import logging
 import numpy as np
 import torch
 from sklearn.model_selection import train_test_split
@@ -11,6 +12,8 @@ if PROJECT_ROOT not in sys.path:
 from data.clinical_mimic import get_mimic_dataloader
 from scripts.train_evidential_gru_seed import EvidentialGRU
 from utils.metrics import calculate_ece
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 def evaluate_one_seed(model_path, device, loader):
     model = EvidentialGRU(input_dim=4, hidden_dim=16).to(device)
@@ -44,15 +47,15 @@ def main():
     for seed in seeds:
         path = f"checkpoints/evidential_gru_seed{seed}.pth"
         if not os.path.exists(path):
-            print(f"Missing {path}, skipping seed {seed}")
+            logging.warning("Missing %s, skipping seed %s", path, seed)
             continue
         metrics = evaluate_one_seed(path, device, loader)
         for k,v in metrics.items():
             results[k].append(v)
-        print(f"Evidential GRU seed {seed}: AUROC={metrics['auroc']:.4f}, ECE={metrics['ece']:.4f}")
-    print("\nEvidential GRU (5 seeds) mean ± std:")
+        logging.info("Evidential GRU seed %s: AUROC=%.4f, ECE=%.4f", seed, metrics['auroc'], metrics['ece'])
+    logging.info("Evidential GRU (5 seeds) mean ± std:")
     for k,v in results.items():
-        print(f"{k.upper()}: {np.mean(v):.4f} ± {np.std(v):.4f}")
+        logging.info("%s: %.4f ± %.4f", k.upper(), np.mean(v), np.std(v))
 
 if __name__ == "__main__":
     main()

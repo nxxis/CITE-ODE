@@ -1,5 +1,6 @@
 import os
 import sys
+import logging
 import numpy as np
 import torch
 from sklearn.model_selection import train_test_split
@@ -61,17 +62,21 @@ def main():
     for seed in seeds:
         model_path = f"checkpoints/gru_mc_dropout_seed{seed}.pth"
         if not os.path.exists(model_path):
-            print(f"Missing {model_path}, skipping seed {seed}")
+            logging.warning("Missing %s, skipping seed %s", model_path, seed)
             continue
         ece_dict = evaluate_one_seed(model_path, device, loader)
         for cov, ece in ece_dict.items():
             results[cov].append(ece)
-        print(f"MC Dropout GRU seed {seed}: ECEc@80% = {ece_dict[0.8]:.4f}")
-    print("\n===== MC Dropout GRU Multi‑Seed Selective Prediction =====")
+        logging.info("MC Dropout GRU seed %s: ECEc@80%% = %.4f", seed, ece_dict[0.8])
+    logging.info("MC Dropout GRU Multi‑Seed Selective Prediction")
     for cov in [1.0, 0.9, 0.8, 0.7]:
         mean_ece = np.mean(results[cov])
         std_ece = np.std(results[cov])
-        print(f"Coverage {cov:.0%}: ECEc = {mean_ece:.4f} ± {std_ece:.4f}")
+        logging.info("Coverage %s: ECEc = %.4f ± %.4f", f"{int(cov*100)}%", mean_ece, std_ece)
+
+if __name__ == "__main__":
+    main()
+
 
 if __name__ == "__main__":
     main()

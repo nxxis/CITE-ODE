@@ -22,6 +22,9 @@ if PROJECT_ROOT not in sys.path:
 
 from data.clinical_mimic import get_mimic_dataloader
 from utils.metrics import calculate_ece, run_bootstrap_audit
+import logging
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 def seed_everything(seed=42):
     os.environ['PYTHONHASHSEED'] = str(seed)
@@ -99,7 +102,7 @@ def main():
     optimizer = optim.Adam(model.parameters(), lr=1e-3)
     criterion = nn.BCEWithLogitsLoss()
 
-    print("Optimizing irregular GRU-D baseline network on 10k cohort...")
+    logging.info("Optimizing irregular GRU-D baseline network on 10k cohort...")
     for epoch in range(15):
         model.train()
         total_loss = 0.0
@@ -112,7 +115,7 @@ def main():
             optimizer.step()
             total_loss += loss.item()
 
-        print(f"GRU-D Epoch [{epoch+1:02d}/15] | Temporal Cross-Entropy Loss: {total_loss/len(loader):.4f}")
+        logging.info("GRU-D Epoch [%02d/15] | Temporal Cross-Entropy Loss: %.4f", epoch+1, total_loss/len(loader))
 
     model.eval()
     all_probs, all_y, all_d = [], [], []
@@ -129,15 +132,25 @@ def main():
     _, y_prob_te, _, y_te, _, d_te = train_test_split(Y_prob, Y_test, D_test, test_size=0.2, random_state=42, stratify=Y_test)
     bounds = run_bootstrap_audit(y_te, y_prob_te, n_resamples=1000)
 
-    print("\n" + "=" * 85)
-    print("Irregular decay GRU-D baseline audit results (10k cohort)")
-    print("=" * 85)
-    print(f"Global predictive AUROC: {roc_auc_score(y_te, y_prob_te):.4f} | 95% CI: ({bounds['auroc_ci'][0]:.4f}, {bounds['auroc_ci'][1]:.4f})")
-    print(f"Expected calibration error (ECE): {calculate_ece(y_te, y_prob_te):.4f} | 95% CI: ({bounds['ece_ci'][0]:.4f}, {bounds['ece_ci'][1]:.4f})")
+    logging.info("%s", "=" * 85)
+    logging.info("Irregular decay GRU-D baseline audit results (10k cohort)")
+    logging.info("%s", "=" * 85)
+    logging.info(
+        "Global predictive AUROC: %.4f | 95%% CI: (%.4f, %.4f)",
+        roc_auc_score(y_te, y_prob_te),
+        bounds["auroc_ci"][0],
+        bounds["auroc_ci"][1],
+    )
+    logging.info(
+        "Expected calibration error (ECE): %.4f | 95%% CI: (%.4f, %.4f)",
+        calculate_ece(y_te, y_prob_te),
+        bounds["ece_ci"][0],
+        bounds["ece_ci"][1],
+    )
 
     os.makedirs("checkpoints", exist_ok=True)
     torch.save(model.state_dict(), "checkpoints/baseline_grud.pth")
-    print("\nGRU-D weights saved to checkpoints/baseline_grud.pth")
+    logging.info("GRU-D weights saved to checkpoints/baseline_grud.pth")
 
 
 if __name__ == "__main__":

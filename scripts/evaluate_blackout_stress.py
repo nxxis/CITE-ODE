@@ -8,6 +8,7 @@ performance (AUROC and calibration/ECE) on the stressed trajectories.
 import os
 import numpy as np
 import sys
+import logging
 import torch
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score
@@ -21,6 +22,8 @@ from models.tide_ode import CEMREvidentialODE
 from scripts.run_baseline_gru import GRUBaselineNet
 from scripts.run_baseline_grud import GRUDBaselineNet
 from utils.metrics import calculate_ece
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 
 def apply_contiguous_blackout(x, window_len=15):
@@ -81,10 +84,22 @@ def main():
     _, gru_te, _, _ = train_test_split(np.concatenate(all_gru), Y_true, test_size=0.2, random_state=42, stratify=Y_true)
     _, grud_te, _, _ = train_test_split(np.concatenate(all_grud), Y_true, test_size=0.2, random_state=42, stratify=Y_true)
 
-    print("\n=== Clinical stress test: 6-hour contiguous telemetry blackout ===")
-    print(f"Vanilla GRU baseline       | AUROC: {roc_auc_score(y_te, gru_te):.4f} | ECE: {calculate_ece(y_te, gru_te):.4f}")
-    print(f"Irregular GRU-D            | AUROC: {roc_auc_score(y_te, grud_te):.4f} | ECE: {calculate_ece(y_te, grud_te):.4f}")
-    print(f"Proposed CITE-ODE          | AUROC: {roc_auc_score(y_te, ode_te):.4f} | ECE: {calculate_ece(y_te, ode_te):.4f}")
+    logging.info("Clinical stress test: 6-hour contiguous telemetry blackout")
+    logging.info(
+        "Vanilla GRU baseline       | AUROC: %.4f | ECE: %.4f",
+        roc_auc_score(y_te, gru_te),
+        calculate_ece(y_te, gru_te),
+    )
+    logging.info(
+        "Irregular GRU-D            | AUROC: %.4f | ECE: %.4f",
+        roc_auc_score(y_te, grud_te),
+        calculate_ece(y_te, grud_te),
+    )
+    logging.info(
+        "Proposed CITE-ODE          | AUROC: %.4f | ECE: %.4f",
+        roc_auc_score(y_te, ode_te),
+        calculate_ece(y_te, ode_te),
+    )
 
 
 if __name__ == "__main__":

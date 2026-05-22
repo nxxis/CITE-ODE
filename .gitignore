@@ -2,9 +2,10 @@
 data/mimic_cemr_cohort.csv
 
 # Generated checkpoints and figures
-checkpoints/*.pth
 results/*.pdf
+results/*.png
 plots/*.pdf
+plots/*.png
 
 # Python cache
 __pycache__/
@@ -23,3 +24,6 @@ cite_env/
 # OS files
 .DS_Store
 thumbs.db
+
+# Obsolete archive
+archive/

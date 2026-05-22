@@ -11,6 +11,9 @@ if PROJECT_ROOT not in sys.path:
 
 from data.clinical_mimic import get_mimic_dataloader
 from models.tide_ode import ODEFunc
+import logging
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 class ODEBCEModel(nn.Module):
     def __init__(self, latent_dim=16, num_vitals=4):
@@ -62,10 +65,10 @@ def main():
             loss.backward()
             optimizer.step()
             total_loss += loss.item()
-        print(f"Seed {args.seed} | Epoch {epoch+1}/15 | Loss: {total_loss/len(loader):.4f}")
+        logging.info("Seed %d | Epoch %d/15 | Loss: %.4f", args.seed, epoch+1, total_loss/len(loader))
 
     torch.save(model.state_dict(), args.output)
-    print(f"Saved {args.output}")
+    logging.info("Saved %s", args.output)
 
 if __name__ == "__main__":
     main()

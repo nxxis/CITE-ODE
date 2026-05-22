@@ -1,4 +1,5 @@
 import os, sys
+import logging
 import numpy as np
 import torch
 from sklearn.model_selection import train_test_split
@@ -47,15 +48,19 @@ def main():
     for seed in seeds:
         path = f"checkpoints/ode_bce_seed{seed}.pth"
         if not os.path.exists(path):
-            print(f"Missing {path}, skipping seed {seed}")
+            logging.warning("Missing %s, skipping seed %s", path, seed)
             continue
         metrics = evaluate_one_seed(path, device, loader)
         for k,v in metrics.items():
             results[k].append(v)
-        print(f"ODE+BCE seed {seed}: AUROC={metrics['auroc']:.4f}, ECE={metrics['ece']:.4f}")
-    print("\nODE+BCE (5 seeds) mean ± std:")
+        logging.info("ODE+BCE seed %s: AUROC=%.4f, ECE=%.4f", seed, metrics['auroc'], metrics['ece'])
+    logging.info("ODE+BCE (5 seeds) mean ± std:")
     for k,v in results.items():
-        print(f"{k.upper()}: {np.mean(v):.4f} ± {np.std(v):.4f}")
+        logging.info("%s: %.4f ± %.4f", k.upper(), np.mean(v), np.std(v))
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+    main()
 
 if __name__ == "__main__":
     main()
