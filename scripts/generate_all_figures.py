@@ -1,28 +1,29 @@
 """Figure generation utilities for the manuscript figures.
 
-This script reproduces the three publication figures used in the repository's
-README. It loads precomputed model checkpoints, computes probabilities under a
-6-hour telemetry blackout (for the reliability diagram), and plots multi-seed
-summary statistics for selective prediction and subgroup analyses.
+This script reproduces the five publication figures:
+1. Reliability diagram under 6-hour blackout (single‑seed representative)
+2. Selective prediction curves (5‑seed mean ± 1σ) for CITE-ODE vs stratified control
+3. Subgroup performance scatter (5‑seed mean ± 1σ)
+4. Risk‑coverage curve comparing CITE-ODE, MC Dropout GRU, and stratified control
+5. Qualitative uncertainty trajectory during blackout (single patient)
 
-The functions are self-contained and intentionally use fixed numbers so that
-figure generation is deterministic and reproducible.
+The functions are self-contained and use fixed numbers for deterministic plotting.
 """
 
 import os
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
-import sys
 from sklearn.calibration import calibration_curve
 
+# Add project root to path
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 from data.clinical_mimic import get_mimic_dataloader
 from models.tide_ode import CEMREvidentialODE
-
 from scripts.run_baseline_gru import GRUBaselineNet
 from scripts.run_baseline_grud import GRUDBaselineNet
 from scripts.evaluate_blackout_stress import apply_contiguous_blackout
@@ -38,7 +39,6 @@ def get_probs_blackout(model, loader, device, is_ode=True):
     returns flattened arrays of predicted probabilities and labels for plotting
     a reliability diagram.
     """
-
     all_probs, all_y = [], []
     model.eval()
     with torch.no_grad():
@@ -63,6 +63,7 @@ def get_probs_blackout(model, loader, device, is_ode=True):
 
 
 def generate_figure1():
+    """Figure 1: Reliability diagram under 6‑hour blackout (single‑seed representative)."""
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     loader = get_mimic_dataloader()
 
@@ -129,11 +130,12 @@ def generate_figure1():
 
 
 def generate_figure2():
+    """Figure 2: Selective prediction curves (5‑seed mean ± 1σ) for CITE-ODE vs stratified control."""
     coverage = np.array([100, 90, 80, 70])
-    cite_mean = np.array([0.0177, 0.0087, 0.0085, 0.0081])
-    cite_std = np.array([0.0074, 0.0064, 0.0074, 0.0054])
-    ctrl_mean = np.array([0.0177, 0.0194, 0.0195, 0.0174])
-    ctrl_std = np.array([0.0074, 0.0104, 0.0100, 0.0044])
+    cite_mean = np.array([0.0190, 0.0090, 0.0103, 0.0096])
+    cite_std = np.array([0.0075, 0.0029, 0.0052, 0.0069])
+    ctrl_mean = np.array([0.0190, 0.0190, 0.0208, 0.0179])
+    ctrl_std = np.array([0.0075, 0.0069, 0.0114, 0.0083])
     prevalence = np.array([12.07, 6.84, 5.39, 4.72])
 
     plt.style.use("seaborn-v0_8-whitegrid")
@@ -164,6 +166,7 @@ def generate_figure2():
 
 
 def generate_figure3():
+    """Figure 3: Subgroup performance scatter (5‑seed mean ± 1σ)."""
     groups = ["Female", "Male", "White", "Black", "Hispanic", "Asian"]
     n_counts = [862, 1134, 1312, 220, 76, 59]
     auroc_mean = [0.805, 0.802, 0.793, 0.806, 0.793, 0.913]
@@ -197,8 +200,87 @@ def generate_figure3():
     print("Figure 3 saved (subgroup scatter with error bars).")
 
 
+def generate_figure4():
+    """Figure 4: Risk‑coverage curve comparing CITE-ODE, MC Dropout GRU, and stratified control."""
+    coverage = np.array([100, 90, 80, 70])
+    # CITE-ODE (5‑seed)
+    cite_mean = np.array([0.0190, 0.0090, 0.0103, 0.0096])
+    cite_std = np.array([0.0075, 0.0029, 0.0052, 0.0069])
+    # MC Dropout GRU (5‑seed)
+    mc_mean = np.array([0.0167, 0.0104, 0.0075, 0.0091])
+    mc_std = np.array([0.0040, 0.0049, 0.0043, 0.0031])
+    # Stratified control (5‑seed)
+    ctrl_mean = np.array([0.0190, 0.0190, 0.0208, 0.0179])
+    ctrl_std = np.array([0.0075, 0.0069, 0.0114, 0.0083])
+
+    plt.style.use("seaborn-v0_8-whitegrid")
+    plt.rcParams.update({"font.size": 12, "figure.dpi": 300, "font.family": "serif"})
+
+    fig, ax = plt.subplots(figsize=(7, 5))
+    ax.plot(coverage, cite_mean, "o-", color="#1b7a43", lw=2, label="CITE-ODE")
+    ax.fill_between(coverage, cite_mean - cite_std, cite_mean + cite_std, color="#1b7a43", alpha=0.2)
+    ax.plot(coverage, mc_mean, "s--", color="#d95f02", lw=2, label="MC Dropout GRU")
+    ax.fill_between(coverage, mc_mean - mc_std, mc_mean + mc_std, color="#d95f02", alpha=0.2)
+    ax.plot(coverage, ctrl_mean, "^:", color="#7570b3", lw=2, label="Stratified control")
+    ax.fill_between(coverage, ctrl_mean - ctrl_std, ctrl_mean + ctrl_std, color="#7570b3", alpha=0.2)
+
+    ax.set_xlabel("Coverage (%)")
+    ax.set_ylabel("Conditional Expected Calibration Error (ECE)")
+    ax.invert_xaxis()
+    ax.grid(True, linestyle=":", alpha=0.6)
+    ax.legend(loc="upper left")
+    ax.set_title("Risk‑coverage curve under 6‑hour blackout (5‑seed mean ± 1σ)")
+
+    plt.tight_layout()
+    plt.savefig("plots/figure4_risk_coverage.pdf", bbox_inches="tight")
+    plt.savefig("plots/figure4_risk_coverage.png", dpi=300)
+    print("Figure 4 saved (risk‑coverage curve).")
+
+
+def generate_figure5():
+    """Figure 5: Qualitative uncertainty trajectory during blackout for a single patient."""
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    loader = get_mimic_dataloader()
+    model = CEMREvidentialODE(latent_dim=16).to(device)
+    model.load_state_dict(torch.load("checkpoints/cemr_fair_seed42.pth", map_location=device))
+    model.eval()
+
+    # Get one patient batch
+    for x, t, c, y, d, mask in loader:
+        x_single = x[0:1].to(device)
+        t_single = t[0:1].to(device)
+        mask_single = mask[0:1].to(device)
+        break
+
+    # Apply blackout
+    stressed_x = apply_contiguous_blackout(x_single, window_len=15)
+
+    # Run ODE and compute uncertainty at each time step
+    t_eval = torch.linspace(0.0, 1.0, steps=x_single.shape[1], device=device)
+    with torch.no_grad():
+        _, _, params = model(stressed_x, t_eval)
+        alpha, beta = params[2], params[3]
+        epistemic_unc = (beta / (alpha - 1 + 1e-6)).cpu().numpy()[0]  # shape [seq_len]
+    time_hours = t_single.cpu().numpy()[0]
+
+    plt.figure(figsize=(8, 4))
+    plt.plot(time_hours, epistemic_unc, 'o-', color='#1b7a43', lw=2, markersize=4)
+    plt.axvspan(6, 12, alpha=0.3, color='red', label='6‑hour blackout window')
+    plt.xlabel('Time (hours)')
+    plt.ylabel('Epistemic uncertainty')
+    plt.title('CITE-ODE: Uncertainty rises during telemetry blackout')
+    plt.legend()
+    plt.grid(True, linestyle=':', alpha=0.6)
+    plt.tight_layout()
+    plt.savefig('plots/figure5_uncertainty_trajectory.pdf', dpi=300)
+    plt.savefig('plots/figure5_uncertainty_trajectory.png', dpi=300)
+    print("Figure 5 saved (uncertainty trajectory).")
+
+
 if __name__ == "__main__":
     generate_figure1()
     generate_figure2()
     generate_figure3()
-    print("\nAll figures saved to 'plots/' directory.")
+    generate_figure4()
+    generate_figure5()
+    print("\nAll five figures saved to 'plots/' directory.")

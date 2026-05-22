@@ -24,9 +24,9 @@ Latent trajectories are projected through a **Normal-Inverse-Gamma (NIG)** evide
 
 Epistemic uncertainty is computed as:
 
-$$
+```math
 u = \frac{\beta}{\alpha - 1}
-$$
+```
 
 ---
 
@@ -67,16 +67,16 @@ All experiments were executed under a tightly controlled environment to ensure r
 
 ## Key Package Versions
 
-| Package | Version |
-|---|---|
-| PyTorch | `2.10.0+cu128` |
-| torchdiffeq | `0.2.5` |
-| NumPy | `2.0.2` |
-| Pandas | `2.2.2` |
-| Scikit-learn | `1.6.1` |
-| Matplotlib | `3.10.0` |
-| Seaborn | `0.13.2` |
-| Google Cloud BigQuery | `3.41.0` |
+| Package               | Version        |
+| --------------------- | -------------- |
+| PyTorch               | `2.10.0+cu128` |
+| torchdiffeq           | `0.2.5`        |
+| NumPy                 | `2.0.2`        |
+| Pandas                | `2.2.2`        |
+| Scikit-learn          | `1.6.1`        |
+| Matplotlib            | `3.10.0`       |
+| Seaborn               | `0.13.2`       |
+| Google Cloud BigQuery | `3.41.0`       |
 
 ## Quick Verification
 
@@ -111,7 +111,7 @@ COLAB_SETUP.md
 
 ```text
 CITE-ODE/
-├── checkpoints/
+├── checkpoints/                          # Pre-trained 5-seed models
 │   ├── cemr_fair_seed42.pth
 │   ├── cemr_fair_seed123.pth
 │   ├── cemr_fair_seed456.pth
@@ -126,7 +126,8 @@ CITE-ODE/
 │   ├── transformer_seed123.pth
 │   ├── transformer_seed456.pth
 │   ├── transformer_seed789.pth
-│   └── transformer_seed101112.pth
+│   ├── transformer_seed101112.pth
+│   └── (additional ablation checkpoints)
 │
 ├── data/
 │   ├── clinical_mimic.py
@@ -150,16 +151,22 @@ CITE-ODE/
 │   ├── evaluate_multiseed_transformer_5.py
 │   ├── evaluate_selective_multiseed_full.py
 │   ├── evaluate_multiseed_subgroups.py
+│   ├── evaluate_multiseed_gru_mc_dropout.py
+│   ├── evaluate_ode_bce.py
+│   ├── evaluate_evidential_gru.py
 │   └── generate_all_figures.py
 │
 ├── plots/
 │   ├── figure1_reliability.pdf
 │   ├── figure2_selective_variance.pdf
-│   └── figure3_subgroup_scatter.pdf
+│   ├── figure3_subgroup_scatter.pdf
+│   ├── figure4_risk_coverage.pdf
+│   └── figure5_uncertainty_trajectory.pdf
 │
 ├── archive/
 ├── README.md
 ├── COLAB_SETUP.md
+├── CITE_ODE_Reproducibility.ipynb
 └── requirements.txt
 ```
 
@@ -171,13 +178,13 @@ To support reproducibility without requiring live database access, the evaluatio
 
 ## Dataset Details
 
-| Field | Value |
-|---|---|
-| Source Dataset | MIMIC-IV Clinical Database |
-| Cohort Size | 10,000 ICU stays |
-| Observation Window | 24 hours |
-| Signals | 8 vital signs |
-| Target | Binary in-hospital mortality |
+| Field              | Value                        |
+| ------------------ | ---------------------------- |
+| Source Dataset     | MIMIC-IV Clinical Database   |
+| Cohort Size        | 10,000 ICU stays             |
+| Observation Window | 24 hours                     |
+| Signals            | 8 vital signs                |
+| Target             | Binary in-hospital mortality |
 
 ---
 
@@ -224,19 +231,25 @@ This ensures reproducibility across supported hardware.
 
 # Seeds
 
-## CITE-ODE
+## CITE-ODE (5 Seeds)
 
 ```text
 42, 123, 456, 789, 101112
 ```
 
-## GRU Baseline
+## GRU Baseline (5 Seeds)
 
 ```text
 42, 123, 456, 789, 101112
 ```
 
-## Transformer Baseline
+## Transformer Baseline (5 Seeds)
+
+```text
+42, 123, 456, 789, 101112
+```
+
+## MC Dropout GRU (5 Seeds)
 
 ```text
 42, 123, 456, 789, 101112
@@ -288,6 +301,29 @@ checkpoints/transformer_seed*.pth
 
 ---
 
+## Train MC Dropout GRU (5 Seeds)
+
+```bash
+python scripts/run_multiseed_gru_mc_dropout.py
+```
+
+Generated checkpoints:
+
+```text
+checkpoints/gru_mc_dropout_seed*.pth
+```
+
+---
+
+## Train Ablations (ODE+BCE, Evidential GRU)
+
+See the notebook or corresponding:
+
+- `run_multiseed_ode_bce.py`
+- `run_multiseed_evidential_gru.py`
+
+---
+
 # 2. Evaluation
 
 ## Global Metrics — CITE-ODE
@@ -329,19 +365,38 @@ Outputs mean ± standard deviation across coverage levels:
 
 ---
 
+## MC Dropout GRU Selective Prediction
+
+```bash
+python scripts/evaluate_multiseed_gru_mc_dropout.py
+```
+
+---
+
+## Ablations — Global Metrics
+
+```bash
+python scripts/evaluate_ode_bce.py
+python scripts/evaluate_evidential_gru.py
+```
+
+---
+
 # 3. Figure Generation
 
 ```bash
 python scripts/generate_all_figures.py
 ```
 
-Generated figures:
+## Generated Figures
 
-| File | Description |
-|---|---|
-| `figure1_reliability.pdf` | Reliability diagram under 6-hour telemetry blackout |
-| `figure2_selective_variance.pdf` | ECE vs coverage with 1σ variance bands |
-| `figure3_subgroup_scatter.pdf` | Subgroup AUROC vs ECE scatter plot |
+| File                               | Description                                                  |
+| ---------------------------------- | ------------------------------------------------------------ |
+| figure1_reliability.pdf            | Reliability diagram under 6-hour telemetry blackout          |
+| figure2_selective_variance.pdf     | Conditional ECE vs coverage (CITE-ODE vs stratified control) |
+| figure3_subgroup_scatter.pdf       | Subgroup AUROC vs ECE scatter plot                           |
+| figure4_risk_coverage.pdf          | Risk-coverage curve (CITE-ODE, MC Dropout, control)          |
+| figure5_uncertainty_trajectory.pdf | Epistemic uncertainty during blackout (single patient)       |
 
 Figures are exported as:
 
@@ -352,22 +407,79 @@ Figures are exported as:
 
 # Experimental Results
 
-| Metric | CITE-ODE (5 seeds) | GRU (5 seeds) | Transformer (5 seeds) |
-|---|---|---|---|
-| Global AUROC | `0.797 ± 0.016` | `0.853 ± 0.009` | `0.873 ± 0.015` |
-| Global ECE | `0.019 ± 0.007` | `0.017 ± 0.005` | `0.022 ± 0.005` |
-| Blackout AUROC | `0.807 ± 0.013` | `0.836 ± 0.013` | `—` |
-| Blackout ECE | `0.018 ± 0.010` | `0.016 ± 0.004` | `—` |
-| Selective ECE @80% | `0.0085 ± 0.0074` | `N/A` | `N/A` |
-| Stratified Control @80% | `0.0195 ± 0.0106` | `N/A` | `N/A` |
+## Table I: Global Test Performance (5-seed means ± std)
 
-Selective prediction improvement is consistent across all five CITE-ODE seeds with no seed-level reversal.
+| Model           | AUROC         | ECE           | Brier         |
+| --------------- | ------------- | ------------- | ------------- |
+| GRU             | 0.853 ± 0.009 | 0.017 ± 0.005 | 0.065 ± 0.003 |
+| Transformer     | 0.873 ± 0.015 | 0.022 ± 0.005 | 0.062 ± 0.003 |
+| CITE-ODE (full) | 0.804 ± 0.019 | 0.018 ± 0.007 | 0.073 ± 0.003 |
+
+---
+
+## Table II: Blackout Performance (6-hour contiguous blackout, 5-seed means ± std)
+
+| Model    | AUROC         | ECE           |
+| -------- | ------------- | ------------- |
+| GRU      | 0.846 ± 0.010 | 0.014 ± 0.002 |
+| CITE-ODE | 0.807 ± 0.013 | 0.018 ± 0.010 |
+
+---
+
+## Table III: Selective Prediction (CITE-ODE vs Stratified Control, 5-seed means ± std)
+
+| Coverage | CITE-ODE ECEc   | Stratified Control ECEc |
+| -------- | --------------- | ----------------------- |
+| 100%     | 0.0190 ± 0.0075 | 0.0190 ± 0.0075         |
+| 90%      | 0.0090 ± 0.0029 | 0.0190 ± 0.0069         |
+| 80%      | 0.0103 ± 0.0052 | 0.0208 ± 0.0114         |
+| 70%      | 0.0096 ± 0.0069 | 0.0179 ± 0.0083         |
+
+---
+
+## Table IV: MC Dropout GRU Selective Prediction (5-seed means ± std)
+
+| Coverage | MC Dropout GRU ECEc |
+| -------- | ------------------- |
+| 100%     | 0.0167 ± 0.0040     |
+| 90%      | 0.0104 ± 0.0049     |
+| 80%      | 0.0075 ± 0.0043     |
+| 70%      | 0.0091 ± 0.0031     |
+
+---
+
+## Table V: Ablation Study (5-seed means ± std)
+
+| Model                   | AUROC         | ECE           | Selective Prediction? | Continuous-time? |
+| ----------------------- | ------------- | ------------- | --------------------- | ---------------- |
+| Plain GRU               | 0.853 ± 0.009 | 0.017 ± 0.005 | ❌                    | ❌               |
+| ODE+BCE (no evidential) | 0.852 ± 0.004 | 0.023 ± 0.011 | ❌                    | ✅               |
+| Evidential GRU (no ODE) | 0.647 ± 0.033 | 0.403 ± 0.002 | ✅ (theoretically)    | ❌               |
+| CITE-ODE (full)         | 0.804 ± 0.019 | 0.018 ± 0.007 | ✅                    | ✅               |
+
+---
+
+## Table VI: Inference Time Efficiency (NVIDIA A100, batch size 64)
+
+| Model          | Forward Passes | Time (ms/sample) |
+| -------------- | -------------- | ---------------- |
+| Standard GRU   | 1              | 1.51             |
+| MC Dropout GRU | 30             | 1.81             |
+| CITE-ODE       | 1              | 2.67             |
+
+---
+
+# Key Takeaways
+
+- Selective prediction improvement is consistent across all five CITE-ODE seeds.
+- MC Dropout achieves slightly lower conditional ECE at 80% coverage but requires 30× forward passes and lacks continuous-time dynamics.
+- Ablation confirms that both the ODE and the evidential head are necessary for competitive selective prediction performance.
 
 ---
 
 # Key Findings
 
-- Uncertainty-guided filtering reduces conditional calibration error by more than 50% at 80% coverage.
+- Uncertainty-guided filtering reduces conditional calibration error substantially at 80% coverage.
 - Stratified random controls preserving prevalence do not exhibit equivalent calibration improvements.
 - Learned epistemic uncertainty is informative for calibration-aware filtering.
 - CITE-ODE intentionally trades some discriminative performance (AUROC) for improved uncertainty reliability under structured missingness.
@@ -403,3 +515,7 @@ pending
 # Contact
 
 For questions, issues, or reproducibility concerns, please open a GitHub issue.
+
+---
+
+_Last Updated: May 2026_

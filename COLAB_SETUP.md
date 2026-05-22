@@ -10,6 +10,8 @@ Use this guide inside a Google Colab notebook to prepare the runtime, install th
 
 Upload the repository folder directly into your Google Drive and mount Drive inside Colab.
 
+---
+
 ## Option B — Clone Directly in Colab
 
 ```bash
@@ -108,11 +110,15 @@ Adjust the path if your Drive folder name differs.
 python scripts/run_multiseed_train.py
 ```
 
+---
+
 ## Train GRU Baseline (5 Seeds)
 
 ```bash
 python scripts/run_multiseed_gru_5.py
 ```
+
+---
 
 ## Train Transformer Baseline (5 Seeds)
 
@@ -122,30 +128,88 @@ python scripts/run_multiseed_transformer_5.py
 
 ---
 
+## Train MC Dropout GRU (5 Seeds)
+
+```bash
+python scripts/run_multiseed_gru_mc_dropout.py
+```
+
+---
+
+## Train Ablations (ODE+BCE, Evidential GRU)
+
+```bash
+python scripts/run_multiseed_ode_bce.py
+python scripts/run_multiseed_evidential_gru.py
+```
+
+Where:
+
+- `run_multiseed_ode_bce.py` → ODE with binary cross-entropy
+- `run_multiseed_evidential_gru.py` → GRU with evidential head
+
+---
+
 # Evaluation Commands
 
-## Evaluate CITE-ODE
+## Global Metrics — CITE-ODE
 
 ```bash
 python scripts/evaluate_multiseed.py
 ```
 
-## Evaluate GRU Baseline
+---
+
+## Global Metrics — GRU
 
 ```bash
 python scripts/evaluate_multiseed_gru_5.py
 ```
 
-## Evaluate Transformer Baseline
+---
+
+## Global Metrics — Transformer
 
 ```bash
 python scripts/evaluate_multiseed_transformer_5.py
 ```
 
-## Run Selective Prediction Evaluation
+---
+
+## Selective Prediction Sweep — CITE-ODE
 
 ```bash
 python scripts/evaluate_selective_multiseed_full.py
+```
+
+---
+
+## MC Dropout GRU Selective Prediction
+
+```bash
+python scripts/evaluate_multiseed_gru_mc_dropout.py
+```
+
+---
+
+## Ablation Evaluations (Global Metrics)
+
+```bash
+python scripts/evaluate_ode_bce.py
+python scripts/evaluate_evidential_gru.py
+```
+
+Where:
+
+- `evaluate_ode_bce.py` → ODE+BCE
+- `evaluate_evidential_gru.py` → Evidential GRU
+
+---
+
+# Subgroup Analysis
+
+```bash
+python scripts/evaluate_multiseed_subgroups.py
 ```
 
 ---
@@ -158,9 +222,27 @@ python scripts/generate_all_figures.py
 
 Generated outputs include:
 
-- Reliability diagrams
-- Selective prediction variance plots
-- Subgroup calibration scatter plots
+- Reliability diagram (Figure 1)
+- Selective prediction variance plot (Figure 2)
+- Subgroup scatter plot (Figure 3)
+- Risk-coverage curve (Figure 4)
+- Uncertainty trajectory during blackout (Figure 5)
+
+---
+
+# Reproducibility Notebook
+
+A complete Colab notebook that reproduces all paper results is provided:
+
+```text
+CITE_ODE_Reproducibility.ipynb
+```
+
+It contains:
+
+- Quick evaluation mode (uses pre-trained checkpoints, runs in minutes)
+- Full training mode (optional, several hours)
+- All evaluation commands and expected result tables
 
 ---
 

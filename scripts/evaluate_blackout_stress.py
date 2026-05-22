@@ -37,6 +37,7 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     loader = get_mimic_dataloader()
 
+    # Load all models trained across the matching 10k workspace
     ode_model = CEMREvidentialODE(latent_dim=16).to(device)
     ode_model.load_state_dict(torch.load("checkpoints/cemr_fair_final.pth", map_location=device))
     ode_model.eval()
@@ -57,13 +58,16 @@ def main():
 
             stressed_x = apply_contiguous_blackout(x, window_len=15)
 
+            # 1. CITE-ODE Framework
             _, logits_ode, _ = ode_model(stressed_x, torch.linspace(0.0, 1.0, steps=x.shape[1], device=device))
             idx_last = mask.sum(dim=1) - 1
             ode_probs = torch.sigmoid(logits_ode[torch.arange(logits_ode.size(0)), idx_last].squeeze(-1)).cpu().numpy()
 
+            # 2. Vanilla GRU
             _, logits_gru = gru_model(stressed_x, mask)
             gru_probs = torch.sigmoid(logits_gru.squeeze(-1)).cpu().numpy()
 
+            # 3. Irregular GRU-D
             _, logits_grud = grud_model(stressed_x, t, mask)
             grud_probs = torch.sigmoid(logits_grud.squeeze(-1)).cpu().numpy()
 
